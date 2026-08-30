@@ -16,25 +16,16 @@ class AuthRepositoryImpl(
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) : AuthRepository {
 
-    override suspend fun login(email: String, password: String): Result<User> = runCatching {
-        val authResult = auth.signInWithEmailAndPassword(email, password).await()
-        val firebaseUser = authResult.user ?: throw Exception("Không tìm thấy kết quả!")
-
-        val documentSnapshot = firestore.collection("users").document(firebaseUser.uid).get().await()
-        val user = documentSnapshot.toObject(User::class.java) ?: User(
-            uid = firebaseUser.uid,
-            email = firebaseUser.email ?: "",
-            displayName = firebaseUser.displayName ?: ""
-        )
-        Log.d("User", "$user")
-        return@runCatching user
+    override suspend fun login(email: String, password: String): Result<Unit> = runCatching {
+        auth.signInWithEmailAndPassword(email, password).await()
+        Unit
     }
 
     override suspend fun register(
         email: String,
         password: String,
         displayName: String
-    ): Result<User> = runCatching {
+    ): Result<Unit> = runCatching {
         val authResult = auth.createUserWithEmailAndPassword(email, password).await()
         val firebaseUser = authResult.user ?: throw Exception("Đăng ký thất bại")
         val newUser = User(
@@ -44,7 +35,7 @@ class AuthRepositoryImpl(
             createdAt = Date()
         )
         firestore.collection("users").document(firebaseUser.uid).set(newUser).await()
-        newUser
+        Unit
     }
 
     override suspend fun logout() {
