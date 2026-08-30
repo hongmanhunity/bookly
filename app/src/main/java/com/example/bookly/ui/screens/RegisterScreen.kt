@@ -1,4 +1,4 @@
-package com.example.bookly.ui.auth
+package com.example.bookly.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.Canvas
@@ -48,7 +48,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bookly.ui.state.AuthUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
+import com.example.bookly.ui.viewmodel.AuthViewModel
 
 @Composable
 fun RegisterScreen(
@@ -80,7 +82,6 @@ fun RegisterScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Họa tiết trang trí nền (Background Geometric Shapes)
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(
                 color = Color(0x154EBA87),
@@ -263,4 +264,3 @@ fun RegisterScreen(
         }
     }
 }
-

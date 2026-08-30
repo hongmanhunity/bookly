@@ -1,6 +1,5 @@
-package com.example.bookly.ui.auth
+package com.example.bookly.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +22,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -48,7 +46,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bookly.ui.state.AuthUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
+import com.example.bookly.ui.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(
@@ -75,7 +75,6 @@ fun LoginScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Họa tiết trang trí nền (Background Geometric Shapes)
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(
                 color = Color(0x154EBA87),
@@ -182,7 +181,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Nút Đăng nhập (Solid Green Pill Button)
             Button(
                 onClick = { viewModel.login(email, password) },
                 enabled = uiState !is AuthUiState.Loading,
@@ -212,7 +210,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Nút chuyển sang Đăng ký (TextButton)
             TextButton(
                 onClick = onNavigateToRegister
             ) {
@@ -226,6 +223,3 @@ fun LoginScreen(
         }
     }
 }
-
-
-
