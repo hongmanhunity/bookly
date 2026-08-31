@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bookly.ui.components.CanvasTheme
 import com.example.bookly.ui.state.AuthUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.AuthViewModel
@@ -82,30 +83,7 @@ fun RegisterScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            drawCircle(
-                color = Color(0x154EBA87),
-                radius = 80.dp.toPx(),
-                center = Offset(size.width * 0.8f, size.height * 0.15f)
-            )
-
-            drawCircle(
-                color = Color(0x184EBA87),
-                radius = 30.dp.toPx(),
-                center = Offset(size.width * 0.15f, size.height * 0.75f)
-            )
-
-            val trianglePath = Path().apply {
-                moveTo(size.width * 0.1f, size.height * 0.2f)
-                lineTo(size.width * 0.25f, size.height * 0.25f)
-                lineTo(size.width * 0.15f, size.height * 0.32f)
-                close()
-            }
-            drawPath(
-                path = trianglePath,
-                color = Color(0x104EBA87)
-            )
-        }
+        CanvasTheme(modifier = modifier)
 
         Column(
             modifier = Modifier
@@ -254,7 +232,11 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            TextButton(onClick = onNavigateToLogin) {
+            TextButton(onClick = {
+                onNavigateToLogin()
+                viewModel.resetUiState()
+            }
+            ) {
                 Text(
                     text = "Bạn đã có tài khoản? Đăng nhập",
                     color = BooklyGreenPrimary,

@@ -32,14 +32,14 @@ import com.example.bookly.domain.model.Book
 
 @Composable
 fun BookCard(
-    books: Book,
+    book: Book,
     onBookClick: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onBookClick(books.id) }
+            .clickable { onBookClick(book.id) }
     ) {
         // Bìa sách thiết kế kiểu Floating Poster nổi với bóng đổ mềm mịn
         Surface(
@@ -51,10 +51,10 @@ fun BookCard(
             Box {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(books.coverUrl)
+                        .data(book.coverUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = books.title,
+                    contentDescription = book.title,
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(0.68f)
@@ -64,7 +64,7 @@ fun BookCard(
                 )
 
                 // Badge Đánh giá (Rating) góc trên bên phải
-                if (books.rating > 0) {
+                if (book.rating > 0) {
                     Surface(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
@@ -78,7 +78,7 @@ fun BookCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "⭐ ${books.rating}",
+                                text = "⭐ ${book.rating}",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF2C3E50)
@@ -93,7 +93,7 @@ fun BookCard(
 
         // Tên sách (Chữ màu tối sang trọng)
         Text(
-            text = books.title,
+            text = book.title,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color(0xFF2C3E50),
@@ -101,11 +101,11 @@ fun BookCard(
             overflow = TextOverflow.Ellipsis
         )
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(1.dp))
 
         // Tên tác giả (Màu xám thanh lịch)
         Text(
-            text = books.author,
+            text = book.author,
             fontSize = 13.sp,
             color = Color(0xFF7F8C8D),
             maxLines = 1,

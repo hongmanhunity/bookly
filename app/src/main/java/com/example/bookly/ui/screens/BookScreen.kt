@@ -27,8 +27,8 @@ import com.example.bookly.ui.viewmodel.BookViewModel
 @Composable
 fun BookScreen(
     modifier: Modifier = Modifier,
-    viewModel: BookViewModel = viewModel(),
-    onBookClick: (String) -> Unit = {}
+    onBookClick: (String) -> Unit,
+    viewModel: BookViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -44,6 +44,7 @@ fun BookScreen(
                     color = BooklyGreenPrimary
                 )
             }
+
             is BookUiState.Error -> {
                 Text(
                     text = state.message,
@@ -51,6 +52,7 @@ fun BookScreen(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
+
             is BookUiState.Success -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -61,7 +63,7 @@ fun BookScreen(
                 ) {
                     items(state.books) { book ->
                         BookCard(
-                            books = book,
+                            book = book,
                             onBookClick = onBookClick
                         )
                     }
