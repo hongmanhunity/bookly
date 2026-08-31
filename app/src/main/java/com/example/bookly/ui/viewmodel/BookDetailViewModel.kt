@@ -8,7 +8,6 @@ import com.example.bookly.ui.state.DetailBookUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class BookDetailViewModel(
@@ -18,24 +17,22 @@ class BookDetailViewModel(
     val uiState: StateFlow<DetailBookUiState> = _uiState
 
     fun loadBookDetail(bookId: String) {
-        val current = _uiState.value
-        if (current is DetailBookUiState.Success && current.book.id == bookId) {
-            return
-        }
+        _uiState.value = DetailBookUiState.Loading
         viewModelScope.launch {
-            _uiState.value = DetailBookUiState.Loading
-            combine(
-                repository.getBookById(bookId),
-                repository.getChapters(bookId)
-            ) { book, chapters ->
-                DetailBookUiState.Success(book = book, chapters = chapters)
-            }
-            .catch { err ->
-                _uiState.value = DetailBookUiState.Error(err.message ?: "Lỗi tải chi tiết sách")
-            }
-            .collect { state ->
-                _uiState.value = state
-            }
+            repository.getBookById(bookId)
+                .catch { err ->
+                    _uiState.value = DetailBookUiState.Error(err.message ?: "Lỗi tải chi tiết sách")
+                }
+                .collect { book ->
+                    repository.getChapters(bookId)
+                        .catch { err ->
+                            _uiState.value = DetailBookUiState.Error(err.message ?: "Lỗi tải danh sách chương")
+                        }
+                        .collect { chapters ->
+                            _uiState.value = DetailBookUiState.Success(book = book, chapters = chapters)
+                        }
+                }
         }
     }
 }
+

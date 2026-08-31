@@ -77,7 +77,15 @@ fun BookDetailScreen(
         viewModel.loadBookDetail(bookId)
     }
 
-    val uiState by viewModel.uiState.collectAsState()
+    val rawUiState by viewModel.uiState.collectAsState()
+    
+    // Tránh hiển thị dữ liệu sách cũ ở Frame 0 khi chuyển giữa các sách khác nhau
+    val uiState = if (rawUiState is DetailBookUiState.Success && (rawUiState as DetailBookUiState.Success).book.id != bookId) {
+        DetailBookUiState.Loading
+    } else {
+        rawUiState
+    }
+
     var isFavorite by remember { mutableStateOf(false) }
 
     Column(
@@ -105,9 +113,8 @@ fun BookDetailScreen(
                     contentDescription = "Quay lại"
                 )
             }
-
             Text(
-                text = "Chi Tiết Sách",
+                text = "Chi tiết sách",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -160,43 +167,39 @@ fun BookDetailScreen(
             }
 
             is DetailBookUiState.Success -> {
-                // Kiểm tra nếu dữ liệu vừa tải về khớp đúng bookId
-                if (state.book.id != bookId) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = BooklyGreenPrimary)
-                    }
-                } else {
-                    val book = state.book
-                    val chapters = state.chapters
+                val book = state.book
+                val chapters = state.chapters
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState()),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                         // Cover Image Hero
                         Surface(
                             shape = RoundedCornerShape(20.dp),
                             shadowElevation = 12.dp,
                             tonalElevation = 4.dp
                         ) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(book.coverUrl)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = book.title,
-                                modifier = Modifier
-                                    .width(190.dp)
-                                    .height(275.dp)
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(Color(0xFFE8ECEF)),
-                                contentScale = ContentScale.Crop
-                            )
+                        val context = LocalContext.current
+                        val imageRequest = remember(book.coverUrl) {
+                            ImageRequest.Builder(context)
+                                .data(book.coverUrl)
+                                .crossfade(true)
+                                .build()
+                        }
+
+                        AsyncImage(
+                            model = imageRequest,
+                            contentDescription = book.title,
+                            modifier = Modifier
+                                .width(190.dp)
+                                .height(275.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(Color(0xFFE8ECEF)),
+                            contentScale = ContentScale.Crop
+                        )
                         }
 
                         Spacer(modifier = Modifier.height(20.dp))
@@ -346,7 +349,6 @@ fun BookDetailScreen(
 
                         Spacer(modifier = Modifier.height(32.dp))
                     }
-                }
             }
         }
     }

@@ -39,10 +39,8 @@ class AuthViewModel(
 
             result.onSuccess {
                 _uiState.value = AuthUiState.Success
-            }.onFailure { exception ->
-                _uiState.value = AuthUiState.Error(
-                    exception.localizedMessage ?: "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."
-                )
+            }.onFailure {
+                _uiState.value = AuthUiState.Error("Tài khoản hoặc mật khẩu không chính xác")
             }
         }
     }
@@ -64,10 +62,8 @@ class AuthViewModel(
 
             result.onSuccess {
                 _uiState.value = AuthUiState.Success
-            }.onFailure { exception ->
-                _uiState.value = AuthUiState.Error(
-                    exception.localizedMessage ?: "Đăng ký thất bại. Vui lòng thử lại."
-                )
+            }.onFailure {
+                _uiState.value = AuthUiState.Error("Đăng ký thất bại. Vui lòng thử lại sau.")
             }
         }
     }
@@ -82,3 +78,5 @@ class AuthViewModel(
         _uiState.value = AuthUiState.Idle
     }
 }
+
+
