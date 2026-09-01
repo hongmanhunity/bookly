@@ -1,6 +1,5 @@
 package com.example.bookly.ui.screens
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,7 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bookly.ui.components.CanvasTheme
+import com.example.bookly.ui.components.common.CanvasTheme
 import com.example.bookly.ui.state.AuthUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.AuthViewModel

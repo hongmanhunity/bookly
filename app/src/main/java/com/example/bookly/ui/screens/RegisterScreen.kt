@@ -1,7 +1,6 @@
 package com.example.bookly.ui.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,9 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -48,7 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.bookly.ui.components.CanvasTheme
+import com.example.bookly.ui.components.common.CanvasTheme
 import com.example.bookly.ui.state.AuthUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.AuthViewModel
@@ -58,7 +55,7 @@ fun RegisterScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = viewModel(),
     onNavigateToLogin: () -> Unit = {},
-    onRegisterSuccess: () -> Unit = {}
+    onRegisterSuccessWithOtp: (email: String, otpCode: String) -> Unit = { _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -71,9 +68,10 @@ fun RegisterScreen(
     val context = LocalContext.current
 
     LaunchedEffect(uiState) {
-        if (uiState is AuthUiState.Success) {
-            Toast.makeText(context, "🎉 Đăng ký tài khoản thành công! Vui lòng đăng nhập.", Toast.LENGTH_LONG).show()
-            onRegisterSuccess()
+        if (uiState is AuthUiState.OtpSent) {
+            val otpCode = (uiState as AuthUiState.OtpSent).otpCode
+            Toast.makeText(context, "🔑 Đã khởi tạo mã OTP 6 số thành công!", Toast.LENGTH_SHORT).show()
+            onRegisterSuccessWithOtp(email, otpCode)
             viewModel.resetUiState()
         }
     }
