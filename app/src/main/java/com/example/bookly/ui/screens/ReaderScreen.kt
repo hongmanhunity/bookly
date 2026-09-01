@@ -1,6 +1,5 @@
 package com.example.bookly.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,9 +22,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +44,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bookly.ui.components.common.ErrorStateView
+import com.example.bookly.ui.components.common.LoadingStateView
 import com.example.bookly.ui.state.DetailBookUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.BookDetailViewModel
@@ -69,7 +67,6 @@ fun ReaderScreen(
     var fontSizeSp by remember { mutableIntStateOf(16) }
     val scrollState = rememberScrollState()
 
-    // Scroll to top when chapter changes
     LaunchedEffect(currentChapterNum) {
         scrollState.scrollTo(0)
     }
@@ -77,25 +74,11 @@ fun ReaderScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         when (val state = uiState) {
             is DetailBookUiState.Loading -> {
-                Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator(color = BooklyGreenPrimary)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "Đang chuẩn bị trang đọc...",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                LoadingStateView(message = "Đang chuẩn bị trang đọc...")
             }
 
             is DetailBookUiState.Error -> {
-                Text(
-                    text = state.message,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                ErrorStateView(message = state.message)
             }
 
             is DetailBookUiState.Success -> {
@@ -105,7 +88,6 @@ fun ReaderScreen(
                     ?: chapters.getOrNull(currentChapterNum - 1)
 
                 Column(modifier = modifier.fillMaxSize()) {
-                    // Top Bar with Book Title & Font Controls (Với statusBarsPadding để tránh bị đè tràn viền)
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -176,7 +158,6 @@ fun ReaderScreen(
                         }
                     }
 
-                    // Reading Content Body
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -211,7 +192,6 @@ fun ReaderScreen(
                         }
                     }
 
-                    // Bottom Navigation (Previous / Next Chapter với navigationBarsPadding)
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -240,7 +220,7 @@ fun ReaderScreen(
                             }
 
                             Text(
-                                text = "Chương $currentChapterNum / ${chapters.size.coerceAtLeast(10)}",
+                                text = "Chương $currentChapterNum / ${chapters.size.coerceAtLeast(1)}",
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant

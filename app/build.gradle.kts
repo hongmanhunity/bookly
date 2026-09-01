@@ -6,15 +6,11 @@ plugins {
     id("com.google.gms.google-services")
 }
 
-val localProperties = Properties().apply {
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        load(localPropertiesFile.inputStream())
-    }
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
-
-val senderEmail = localProperties.getProperty("SENDER_EMAIL") ?: ""
-val senderAppPassword = localProperties.getProperty("SENDER_APP_PASSWORD") ?: ""
 
 android {
     namespace = "com.example.bookly"
@@ -33,6 +29,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        val senderEmail = localProperties.getProperty("SENDER_EMAIL") ?: "\"\""
+        val senderAppPassword = localProperties.getProperty("SENDER_APP_PASSWORD") ?: "\"\""
         buildConfigField("String", "SENDER_EMAIL", senderEmail)
         buildConfigField("String", "SENDER_APP_PASSWORD", senderAppPassword)
     }
@@ -54,14 +52,7 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "META-INF/NOTICE"
-            excludes += "META-INF/LICENSE"
-            excludes += "META-INF/LICENSE.txt"
-            excludes += "META-INF/NOTICE.txt"
-            excludes += "META-INF/NOTICE.md"
-            excludes += "META-INF/LICENSE.md"
-            excludes += "META-INF/*.md"
+            excludes += "/META-INF/{AL2.0,LGPL2.1,NOTICE.md,LICENSE.md}"
         }
     }
 }
@@ -90,8 +81,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.compose.material:material-icons-extended")
-
-    // JavaMail API for SMTP email sending
+    // JavaMail API for sending real emails
     implementation("com.sun.mail:android-mail:1.6.7")
     implementation("com.sun.mail:android-activation:1.6.7")
 }

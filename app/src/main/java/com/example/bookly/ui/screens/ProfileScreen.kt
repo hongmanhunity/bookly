@@ -14,23 +14,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoStories
-import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -45,6 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookly.domain.model.User
+import com.example.bookly.ui.components.common.ErrorStateView
+import com.example.bookly.ui.components.common.LoadingStateView
 import com.example.bookly.ui.state.ProfileUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.ProfileViewModel
@@ -66,17 +65,10 @@ fun ProfileScreen(
     ) {
         when (val state = uiState) {
             is ProfileUiState.Loading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = BooklyGreenPrimary
-                )
+                LoadingStateView(message = "Đang tải thông tin cá nhân...")
             }
             is ProfileUiState.Error -> {
-                Text(
-                    text = state.message,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                ErrorStateView(message = state.message)
             }
             is ProfileUiState.Success -> {
                 ProfileContent(
@@ -145,21 +137,6 @@ private fun ProfileHeaderSection(user: User) {
         color = MaterialTheme.colorScheme.onSurface
     )
 
-    Spacer(modifier = Modifier.height(6.dp))
-
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = BooklyGreenPrimary.copy(alpha = 0.15f)
-    ) {
-        Text(
-            text = if (user.role == "ADMIN") "⚡ ADMIN" else "🌱 HỌC VIÊN",
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 5.dp),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = BooklyGreenPrimary
-        )
-    }
-
     if (user.bio.isNotBlank()) {
         Spacer(modifier = Modifier.height(10.dp))
         Text(
@@ -173,7 +150,6 @@ private fun ProfileHeaderSection(user: User) {
 
 @Composable
 private fun ReadingStatsSection(user: User) {
-    // Trình bày tự nhiên, không dùng Card bọc cứng nhắc
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -220,7 +196,6 @@ private fun ReadingStatsSection(user: User) {
 
 @Composable
 private fun AccountDetailsSection(user: User) {
-    // Trình bày phẳng, tự nhiên
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Thông tin tài khoản",
@@ -258,9 +233,9 @@ private fun AccountDetailsSection(user: User) {
         )
 
         ProfileInfoRow(
-            icon = Icons.Default.Badge,
-            title = "Mã thành viên",
-            value = user.uid.take(8).ifBlank { "N/A" }
+            icon = Icons.Default.Info,
+            title = "Phiên bản ứng dụng",
+            value = "Bookly v1.0.0"
         )
     }
 }

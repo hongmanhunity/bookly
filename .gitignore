@@ -1,6 +1,27 @@
+# Built application files
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+/bin/
+/gen/
+/out/
+/build/
+
+# Android Studio & Gradle
 *.iml
 .gradle
 /local.properties
+local.properties
+/.idea/
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -8,8 +29,19 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 .DS_Store
-/build
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+
+# Firebase Configuration (Sensitive API keys)
+google-services.json
+**/google-services.json
+
+# Keystore & Signing Secrets
+*.jks
+*.keystore
+key.properties
+
+# Environment variable files
+.env
+.env.*

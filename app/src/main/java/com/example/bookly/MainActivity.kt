@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.example.bookly.data.seeder.FirestoreSeeder
 import com.example.bookly.ui.screens.BookDetailScreen
 import com.example.bookly.ui.screens.BookScreen
+import com.example.bookly.ui.screens.EmailOtpVerificationScreen
 import com.example.bookly.ui.screens.HomeScreen
 import com.example.bookly.ui.screens.LoginScreen
 import com.example.bookly.ui.screens.ProfileScreen
@@ -44,6 +45,7 @@ import com.example.bookly.ui.theme.BooklyTheme
 enum class Screen {
     LOGIN,
     REGISTER,
+    EMAIL_OTP,
     HOME,
     BOOK_LIST,
     BOOK_DETAIL,
@@ -61,6 +63,8 @@ class MainActivity : ComponentActivity() {
                 var previousScreen by remember { mutableStateOf(Screen.HOME) }
                 var selectedBookId by remember { mutableStateOf<String?>(null) }
                 var selectedChapterNum by remember { mutableStateOf(1) }
+                var registeredEmail by remember { mutableStateOf("") }
+                var currentOtpCode by remember { mutableStateOf("") }
 
                 // Chỉ gieo dữ liệu nếu chưa có trên Firestore (forceReSeed = false)
                 LaunchedEffect(Unit) {
@@ -68,7 +72,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val showBottomBar = currentScreen in listOf(Screen.HOME, Screen.BOOK_LIST, Screen.PROFILE)
-                val showTopBar = currentScreen in listOf(Screen.HOME, Screen.BOOK_LIST, Screen.PROFILE)
+                val showTopBar = currentScreen in listOf(Screen.HOME, Screen.BOOK_LIST)
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -104,7 +108,21 @@ class MainActivity : ComponentActivity() {
                             RegisterScreen(
                                 modifier = modifier,
                                 onNavigateToLogin = { currentScreen = Screen.LOGIN },
-                                onRegisterSuccess = { currentScreen = Screen.LOGIN }
+                                onRegisterSuccessWithOtp = { email, otp ->
+                                    registeredEmail = email
+                                    currentOtpCode = otp
+                                    currentScreen = Screen.EMAIL_OTP
+                                }
+                            )
+                        }
+
+                        Screen.EMAIL_OTP -> {
+                            EmailOtpVerificationScreen(
+                                email = registeredEmail,
+                                initialOtpCode = currentOtpCode,
+                                onVerifiedSuccess = { currentScreen = Screen.LOGIN },
+                                onNavigateToLogin = { currentScreen = Screen.LOGIN },
+                                modifier = modifier
                             )
                         }
 
