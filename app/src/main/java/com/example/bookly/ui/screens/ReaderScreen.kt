@@ -49,6 +49,7 @@ import com.example.bookly.ui.components.common.LoadingStateView
 import com.example.bookly.ui.state.DetailBookUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.BookDetailViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun ReaderScreen(
@@ -56,7 +57,7 @@ fun ReaderScreen(
     initialChapterNumber: Int = 1,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: BookDetailViewModel = viewModel()
+    viewModel: BookDetailViewModel = koinViewModel()
 ) {
     LaunchedEffect(bookId) {
         viewModel.loadBookDetail(bookId)
@@ -90,8 +91,7 @@ fun ReaderScreen(
                 Column(modifier = modifier.fillMaxSize()) {
                     Surface(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .statusBarsPadding(),
+                            .fillMaxWidth(),
                         tonalElevation = 4.dp,
                         shadowElevation = 4.dp
                     ) {
@@ -194,8 +194,7 @@ fun ReaderScreen(
 
                     Surface(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .navigationBarsPadding(),
+                            .fillMaxWidth(),
                         tonalElevation = 6.dp,
                         shadowElevation = 8.dp
                     ) {

@@ -1,5 +1,6 @@
 package com.example.bookly
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,16 +24,23 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.bookly.data.seeder.FirestoreSeeder
+import com.example.bookly.ui.navigation.Screen
 import com.example.bookly.ui.screens.BookDetailScreen
+import com.example.bookly.ui.screens.BookmarkScreen
 import com.example.bookly.ui.screens.BookScreen
 import com.example.bookly.ui.screens.EmailOtpVerificationScreen
 import com.example.bookly.ui.screens.HomeScreen
@@ -41,17 +50,7 @@ import com.example.bookly.ui.screens.ReaderScreen
 import com.example.bookly.ui.screens.RegisterScreen
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.theme.BooklyTheme
-
-enum class Screen {
-    LOGIN,
-    REGISTER,
-    EMAIL_OTP,
-    HOME,
-    BOOK_LIST,
-    BOOK_DETAIL,
-    READER,
-    PROFILE
-}
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,127 +58,200 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BooklyTheme {
-                var currentScreen by remember { mutableStateOf(Screen.LOGIN) }
-                var previousScreen by remember { mutableStateOf(Screen.HOME) }
-                var selectedBookId by remember { mutableStateOf<String?>(null) }
-                var selectedChapterNum by remember { mutableStateOf(1) }
-                var registeredEmail by remember { mutableStateOf("") }
-                var currentOtpCode by remember { mutableStateOf("") }
+                // 1. Khởi tạo NavController (chiếc remote điều khiển chuyển màn)
+                val navController = rememberNavController()
 
-                // Chỉ gieo dữ liệu nếu chưa có trên Firestore (forceReSeed = false)
+                // 2. Tự động kiểm tra: Đã đăng nhập chưa?
+                // Nếu rồi -> vào thẳng Home, nếu chưa -> vào Login
+                val isUserLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
+                val startDestination = if (isUserLoggedIn) Screen.Home.route else Screen.Login.route
+
+                // 3. Lắng nghe route hiện tại để hiển thị TopBar và BottomBar
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+
+                val showBottomBar = currentRoute in listOf(
+                    Screen.Home.route,
+                    Screen.BookList.route,
+                    Screen.Bookmarks.route,
+                    Screen.Profile.route
+                )
+                val showTopBar = currentRoute in listOf(
+                    Screen.Home.route,
+                    Screen.BookList.route,
+                    Screen.Bookmarks.route
+                )
+
+                // Chỉ gieo dữ liệu nếu chưa có trên Firestore
                 LaunchedEffect(Unit) {
                     FirestoreSeeder.seedBooks(forceReSeed = false)
                 }
-
-                val showBottomBar = currentScreen in listOf(Screen.HOME, Screen.BOOK_LIST, Screen.PROFILE)
-                val showTopBar = currentScreen in listOf(Screen.HOME, Screen.BOOK_LIST)
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
                         if (showTopBar) {
-                            BooklyTopBar(title = "bookly")
+                            BooklyTopBar(
+                                title = "bookly"
+                            )
                         }
                     },
                     bottomBar = {
                         if (showBottomBar) {
                             BooklyBottomNav(
-                                currentScreen = currentScreen,
-                                onScreenSelected = { screen ->
-                                    selectedBookId = null
-                                    currentScreen = screen
+                                currentRoute = currentRoute,
+                                onNavigateToRoute = { targetRoute ->
+                                    if (currentRoute != targetRoute) {
+                                        navController.navigate(targetRoute) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    }
                                 }
                             )
                         }
                     }
                 ) { innerPadding ->
-                    val modifier = Modifier.padding(innerPadding)
-
-                    when (currentScreen) {
-                        Screen.LOGIN -> {
+                    // 4. NavHost - Khung chiếu các màn hình theo từng route
+                    NavHost(
+                        navController = navController,
+                        startDestination = startDestination,
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        // --- MÀN HÌNH ĐĂNG NHẬP ---
+                        composable(Screen.Login.route) {
                             LoginScreen(
-                                modifier = modifier,
-                                onNavigateToRegister = { currentScreen = Screen.REGISTER },
-                                onLoginSuccess = { currentScreen = Screen.HOME }
+                                onNavigateToRegister = {
+                                    navController.navigate(Screen.Register.route)
+                                },
+                                onLoginSuccess = {
+                                    // Đăng nhập thành công: Sang Home và xóa Login khỏi Back Stack
+                                    navController.navigate(Screen.Home.route) {
+                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                    }
+                                }
                             )
                         }
 
-                        Screen.REGISTER -> {
+                        // --- MÀN HÌNH ĐĂNG KÝ ---
+                        composable(Screen.Register.route) {
                             RegisterScreen(
-                                modifier = modifier,
-                                onNavigateToLogin = { currentScreen = Screen.LOGIN },
+                                onNavigateToLogin = {
+                                    navController.popBackStack()
+                                },
                                 onRegisterSuccessWithOtp = { email, otp ->
-                                    registeredEmail = email
-                                    currentOtpCode = otp
-                                    currentScreen = Screen.EMAIL_OTP
+                                    navController.navigate(Screen.EmailOtp.createRoute(email, otp))
                                 }
                             )
                         }
 
-                        Screen.EMAIL_OTP -> {
+                        // --- MÀN HÌNH XÁC THỰC OTP ---
+                        composable(
+                            route = Screen.EmailOtp.route,
+                            arguments = listOf(
+                                navArgument("email") { type = NavType.StringType },
+                                navArgument("otp") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val rawEmail = backStackEntry.arguments?.getString("email") ?: ""
+                            val email = Uri.decode(rawEmail)
+                            val otp = backStackEntry.arguments?.getString("otp") ?: ""
+
                             EmailOtpVerificationScreen(
-                                email = registeredEmail,
-                                initialOtpCode = currentOtpCode,
-                                onVerifiedSuccess = { currentScreen = Screen.LOGIN },
-                                onNavigateToLogin = { currentScreen = Screen.LOGIN },
-                                modifier = modifier
+                                email = email,
+                                initialOtpCode = otp,
+                                onVerifiedSuccess = {
+                                    // Xác thực xong -> quay về Login để người dùng đăng nhập
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Register.route) { inclusive = true }
+                                    }
+                                },
+                                onNavigateToLogin = {
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Register.route) { inclusive = true }
+                                    }
+                                }
                             )
                         }
 
-                        Screen.HOME -> {
+                        // --- TAB 1: TRANG CHỦ ---
+                        composable(Screen.Home.route) {
                             HomeScreen(
-                                modifier = modifier,
-                                onBookClick = { id ->
-                                    selectedBookId = id
-                                    previousScreen = Screen.HOME
-                                    currentScreen = Screen.BOOK_DETAIL
+                                onBookClick = { bookId ->
+                                    navController.navigate(Screen.BookDetail.createRoute(bookId))
                                 }
                             )
                         }
 
-                        Screen.BOOK_LIST -> {
+                        // --- TAB 2: TỦ SÁCH ---
+                        composable(Screen.BookList.route) {
                             BookScreen(
-                                modifier = modifier,
-                                onBookClick = { id ->
-                                    selectedBookId = id
-                                    previousScreen = Screen.BOOK_LIST
-                                    currentScreen = Screen.BOOK_DETAIL
+                                onBookClick = { bookId ->
+                                    navController.navigate(Screen.BookDetail.createRoute(bookId))
                                 }
                             )
                         }
 
-                        Screen.BOOK_DETAIL -> {
-                            if (selectedBookId != null) {
-                                BookDetailScreen(
-                                    bookId = selectedBookId!!,
-                                    onBackClick = {
-                                        currentScreen = previousScreen
-                                    },
-                                    onChapterClick = { chapterNum ->
-                                        selectedChapterNum = chapterNum
-                                        currentScreen = Screen.READER
-                                    }
-                                )
-                            }
-                        }
-
-                        Screen.READER -> {
-                            if (selectedBookId != null) {
-                                ReaderScreen(
-                                    bookId = selectedBookId!!,
-                                    initialChapterNumber = selectedChapterNum,
-                                    onBackClick = {
-                                        currentScreen = Screen.BOOK_DETAIL
-                                    }
-                                )
-                            }
-                        }
-
-                        Screen.PROFILE -> {
+                        // --- TAB 3: TRANG CÁ NHÂN ---
+                        composable(Screen.Profile.route) {
                             ProfileScreen(
-                                modifier = modifier,
                                 onLogoutClick = {
-                                    currentScreen = Screen.LOGIN
+                                    // Đăng xuất: Về Login và xóa sạch toàn bộ màn hình trước đó
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
+
+                        // --- CHI TIẾT SÁCH ---
+                        composable(
+                            route = Screen.BookDetail.route,
+                            arguments = listOf(
+                                navArgument("bookId") { type = NavType.StringType }
+                            )
+                        ) { backStackEntry ->
+                            val bookId = backStackEntry.arguments?.getString("bookId") ?: ""
+                            BookDetailScreen(
+                                bookId = bookId,
+                                onBackClick = {
+                                    navController.popBackStack()
+                                },
+                                onChapterClick = { chapterNum ->
+                                    navController.navigate(Screen.Reader.createRoute(bookId, chapterNum))
+                                }
+                            )
+                        }
+
+                        // --- MÀN HÌNH ĐỌC SÁCH ---
+                        composable(
+                            route = Screen.Reader.route,
+                            arguments = listOf(
+                                navArgument("bookId") { type = NavType.StringType },
+                                navArgument("chapterNumber") { type = NavType.IntType }
+                            )
+                        ) { backStackEntry ->
+                            val bookId = backStackEntry.arguments?.getString("bookId") ?: ""
+                            val chapterNum = backStackEntry.arguments?.getInt("chapterNumber") ?: 1
+
+                            ReaderScreen(
+                                bookId = bookId,
+                                initialChapterNumber = chapterNum,
+                                onBackClick = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
+                        // --- MÀN HÌNH SÁCH ĐÃ LƯU (BOOKMARKS) ---
+                        composable(Screen.Bookmarks.route) {
+                            BookmarkScreen(
+                                onBackClick = null,
+                                onBookClick = { bookId ->
+                                    navController.navigate(Screen.BookDetail.createRoute(bookId))
                                 }
                             )
                         }
@@ -192,7 +264,9 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BooklyTopBar(title: String = "bookly") {
+fun BooklyTopBar(
+    title: String = "bookly"
+) {
     TopAppBar(
         title = {
             Text(
@@ -212,13 +286,13 @@ fun BooklyTopBar(title: String = "bookly") {
 
 @Composable
 fun BooklyBottomNav(
-    currentScreen: Screen,
-    onScreenSelected: (Screen) -> Unit
+    currentRoute: String?,
+    onNavigateToRoute: (String) -> Unit
 ) {
     NavigationBar(containerColor = Color.White) {
         NavigationBarItem(
-            selected = currentScreen == Screen.HOME,
-            onClick = { onScreenSelected(Screen.HOME) },
+            selected = currentRoute == Screen.Home.route,
+            onClick = { onNavigateToRoute(Screen.Home.route) },
             icon = { Icon(Icons.Default.Home, contentDescription = "Trang chủ") },
             label = { Text("Trang chủ") },
             colors = NavigationBarItemDefaults.colors(
@@ -228,8 +302,8 @@ fun BooklyBottomNav(
             )
         )
         NavigationBarItem(
-            selected = currentScreen == Screen.BOOK_LIST,
-            onClick = { onScreenSelected(Screen.BOOK_LIST) },
+            selected = currentRoute == Screen.BookList.route,
+            onClick = { onNavigateToRoute(Screen.BookList.route) },
             icon = { Icon(Icons.Default.Book, contentDescription = "Tủ sách") },
             label = { Text("Tủ sách") },
             colors = NavigationBarItemDefaults.colors(
@@ -239,8 +313,19 @@ fun BooklyBottomNav(
             )
         )
         NavigationBarItem(
-            selected = currentScreen == Screen.PROFILE,
-            onClick = { onScreenSelected(Screen.PROFILE) },
+            selected = currentRoute == Screen.Bookmarks.route,
+            onClick = { onNavigateToRoute(Screen.Bookmarks.route) },
+            icon = { Icon(Icons.Default.Bookmark, contentDescription = "Yêu thích") },
+            label = { Text("Yêu thích") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = BooklyGreenPrimary,
+                selectedTextColor = BooklyGreenPrimary,
+                indicatorColor = Color(0x204EBA87)
+            )
+        )
+        NavigationBarItem(
+            selected = currentRoute == Screen.Profile.route,
+            onClick = { onNavigateToRoute(Screen.Profile.route) },
             icon = { Icon(Icons.Default.Person, contentDescription = "Cá nhân") },
             label = { Text("Cá nhân") },
             colors = NavigationBarItemDefaults.colors(

@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
 class HomeViewModel(
-    private val bookRepository: BookRepository = BookRepositoryImpl(),
-    private val authRepository: AuthRepository = AuthRepositoryImpl()
+    private val bookRepository: BookRepository ,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<HomeUiState> = combine(

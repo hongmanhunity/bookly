@@ -47,13 +47,14 @@ import com.example.bookly.ui.components.common.LoadingStateView
 import com.example.bookly.ui.state.ProfileUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.ProfileViewModel
+import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = viewModel(),
+    viewModel: ProfileViewModel = koinViewModel(),
     onLogoutClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()

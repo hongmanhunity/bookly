@@ -64,7 +64,7 @@ fun ChapterItemRow(
 
             Column {
                 Text(
-                    text = "Chương ${chapter.chapterNumber}: ${chapter.title}",
+                    text = "${chapter.title}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,

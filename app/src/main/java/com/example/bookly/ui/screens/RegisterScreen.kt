@@ -49,11 +49,12 @@ import com.example.bookly.ui.components.common.CanvasTheme
 import com.example.bookly.ui.state.AuthUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.AuthViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun RegisterScreen(
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = viewModel(),
+    viewModel: AuthViewModel = koinViewModel(),
     onNavigateToLogin: () -> Unit = {},
     onRegisterSuccessWithOtp: (email: String, otpCode: String) -> Unit = { _, _ -> }
 ) {
