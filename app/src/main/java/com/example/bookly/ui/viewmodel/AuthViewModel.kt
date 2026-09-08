@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
-    private val authRepository: AuthRepository = AuthRepositoryImpl()
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)

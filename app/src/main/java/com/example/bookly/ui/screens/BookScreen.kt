@@ -37,12 +37,13 @@ import com.example.bookly.ui.components.common.ErrorStateView
 import com.example.bookly.ui.components.common.LoadingStateView
 import com.example.bookly.ui.state.BookUiState
 import com.example.bookly.ui.viewmodel.BookViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun BookScreen(
     modifier: Modifier = Modifier,
     onBookClick: (String) -> Unit,
-    viewModel: BookViewModel = viewModel()
+    viewModel: BookViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()

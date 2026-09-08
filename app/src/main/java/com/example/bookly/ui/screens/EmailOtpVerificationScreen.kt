@@ -55,6 +55,7 @@ import com.example.bookly.ui.state.AuthUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun EmailOtpVerificationScreen(
@@ -63,7 +64,7 @@ fun EmailOtpVerificationScreen(
     onVerifiedSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = viewModel()
+    viewModel: AuthViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current

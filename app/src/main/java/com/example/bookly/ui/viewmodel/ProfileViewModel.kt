@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
-    private val authRepository: AuthRepository = AuthRepositoryImpl()
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ProfileUiState>(ProfileUiState.Loading)

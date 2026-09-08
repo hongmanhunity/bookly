@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 class BookViewModel(
-    private val repository: BookRepository = BookRepositoryImpl()
+    private val repository: BookRepository
 ) : ViewModel() {
     private var allBooks = emptyList<Book>()
     //Filter

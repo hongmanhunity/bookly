@@ -33,12 +33,13 @@ import com.example.bookly.ui.components.home.TrendingBookCard
 import com.example.bookly.ui.state.HomeUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.HomeViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     onBookClick: (String) -> Unit,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

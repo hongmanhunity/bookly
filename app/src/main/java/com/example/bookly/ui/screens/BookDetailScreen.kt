@@ -62,14 +62,16 @@ import com.example.bookly.ui.components.detail.DetailStatItem
 import com.example.bookly.ui.state.DetailBookUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.BookDetailViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun BookDetailScreen(
     bookId: String,
     onBackClick: () -> Unit,
     onChapterClick: (chapterNumber: Int) -> Unit = {},
-    viewModel: BookDetailViewModel = viewModel()
-) {
+    viewModel: BookDetailViewModel = koinViewModel(),
+
+    ) {
     LaunchedEffect(bookId) {
         viewModel.loadBookDetail(bookId)
     }
@@ -82,14 +84,13 @@ fun BookDetailScreen(
         rawUiState
     }
 
-    var isFavorite by remember { mutableStateOf(false) }
+    // ✅ MỚI: Đọc trực tiếp trạng thái từ Room Database:
+    val isFavorite by viewModel.isBookmarked(bookId).collectAsState(initial = false)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .statusBarsPadding()
-            .navigationBarsPadding()
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         // 1. Top Navigation Bar
@@ -116,7 +117,12 @@ fun BookDetailScreen(
             )
 
             IconButton(
-                onClick = { isFavorite = !isFavorite },
+                onClick = {
+                    if (uiState is DetailBookUiState.Success) {
+                        val currentBook = (uiState as DetailBookUiState.Success).book
+                        viewModel.toggleBookmark(currentBook, isFavorite)
+                    }
+                },
                 modifier = Modifier
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
@@ -256,7 +262,7 @@ fun BookDetailScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Bắt Đầu Đọc (Chương 1)",
+                            text = "Bắt Đầu Đọc",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
