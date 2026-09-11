@@ -19,7 +19,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -88,12 +90,26 @@ fun ReaderScreen(
                 val currentChapter = chapters.find { it.chapterNumber == currentChapterNum }
                     ?: chapters.getOrNull(currentChapterNum - 1)
 
+                // Tự động lưu tiến trình đọc dở khi người dùng xem chương
+                LaunchedEffect(currentChapterNum, currentChapter) {
+                    if (currentChapter != null && chapters.isNotEmpty()) {
+                        viewModel.saveReadingProgress(
+                            bookId = bookId,
+                            chapterNumber = currentChapterNum,
+                            chapterTitle = currentChapter.title,
+                            totalChapters = chapters.size,
+                            isFinished = false
+                        )
+                    }
+                }
+
                 Column(modifier = modifier.fillMaxSize()) {
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        tonalElevation = 4.dp,
-                        shadowElevation = 4.dp
+                        tonalElevation = 0.dp,
+                        shadowElevation = 2.dp,
+                        color = MaterialTheme.colorScheme.background
                     ) {
                         Row(
                             modifier = Modifier
@@ -195,8 +211,9 @@ fun ReaderScreen(
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        tonalElevation = 6.dp,
-                        shadowElevation = 8.dp
+                        tonalElevation = 0.dp,
+                        shadowElevation = 4.dp,
+                        color = MaterialTheme.colorScheme.background
                     ) {
                         Row(
                             modifier = Modifier
@@ -225,18 +242,45 @@ fun ReaderScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
 
-                            Button(
-                                onClick = { if (currentChapterNum < chapters.size) currentChapterNum++ },
-                                enabled = currentChapterNum < chapters.size,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = BooklyGreenPrimary)
-                            ) {
-                                Text("Sau")
-                                Spacer(modifier = Modifier.padding(2.dp))
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = null
-                                )
+                            val isLastChapter = currentChapterNum >= chapters.size
+                            if (isLastChapter) {
+                                Button(
+                                    onClick = {
+                                        if (currentChapter != null) {
+                                            viewModel.saveReadingProgress(
+                                                bookId = bookId,
+                                                chapterNumber = currentChapterNum,
+                                                chapterTitle = currentChapter.title,
+                                                totalChapters = chapters.size,
+                                                isFinished = true
+                                            )
+                                        }
+                                        onBackClick()
+                                    },
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+                                ) {
+                                    Text("Hoàn thành")
+                                    Spacer(modifier = Modifier.padding(2.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Hoàn thành sách"
+                                    )
+                                }
+                            } else {
+                                Button(
+                                    onClick = { if (currentChapterNum < chapters.size) currentChapterNum++ },
+                                    enabled = currentChapterNum < chapters.size,
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = BooklyGreenPrimary)
+                                ) {
+                                    Text("Sau")
+                                    Spacer(modifier = Modifier.padding(2.dp))
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = null
+                                    )
+                                }
                             }
                         }
                     }

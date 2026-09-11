@@ -72,7 +72,7 @@ fun LoginScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         CanvasTheme(
             modifier = modifier
@@ -97,7 +97,7 @@ fun LoginScreen(
             Text(
                 text = "Light Novel",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF7F8C8D),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 lineHeight = 20.sp
             )
@@ -113,9 +113,13 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = CircleShape,
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                     focusedBorderColor = BooklyGreenPrimary,
-                    unfocusedBorderColor = Color(0xFFE0E0E0),
-                    focusedLabelColor = BooklyGreenPrimary
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                    focusedLabelColor = BooklyGreenPrimary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    cursorColor = BooklyGreenPrimary
                 )
             )
 
@@ -133,16 +137,20 @@ fun LoginScreen(
                         Icon(
                             imageVector = if (isPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                             contentDescription = "Toggle password visibility",
-                            tint = Color(0xFF7F8C8D)
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = CircleShape,
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                     focusedBorderColor = BooklyGreenPrimary,
-                    unfocusedBorderColor = Color(0xFFE0E0E0),
-                    focusedLabelColor = BooklyGreenPrimary
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                    focusedLabelColor = BooklyGreenPrimary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    cursorColor = BooklyGreenPrimary
                 )
             )
 

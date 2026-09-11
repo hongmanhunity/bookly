@@ -19,15 +19,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -46,6 +50,7 @@ import com.example.bookly.ui.components.common.ErrorStateView
 import com.example.bookly.ui.components.common.LoadingStateView
 import com.example.bookly.ui.state.ProfileUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
+import com.example.bookly.ui.viewmodel.BookmarkViewModel
 import com.example.bookly.ui.viewmodel.ProfileViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
@@ -58,6 +63,10 @@ fun ProfileScreen(
     onLogoutClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val bookmarkCount by viewModel.bookmarkCount.collectAsState()
+    val currentlyReadingCount by viewModel.currentlyReadingCount.collectAsState()
+    val finishedReadingCount by viewModel.finishedReadingCount.collectAsState()
+    val isDarkMode by viewModel.isDarkMode.collectAsState()
 
     Box(
         modifier = modifier
@@ -74,6 +83,11 @@ fun ProfileScreen(
             is ProfileUiState.Success -> {
                 ProfileContent(
                     user = state.user,
+                    bookmarkCount = bookmarkCount,
+                    currentlyReadingCount = currentlyReadingCount,
+                    finishedReadingCount = finishedReadingCount,
+                    isDarkMode = isDarkMode,
+                    onToggleDarkMode = viewModel::toggleDarkMode,
                     onLogoutClick = {
                         viewModel.logout(onLogoutSuccess = onLogoutClick)
                     }
@@ -86,6 +100,11 @@ fun ProfileScreen(
 @Composable
 private fun ProfileContent(
     user: User,
+    bookmarkCount: Int,
+    currentlyReadingCount: Int,
+    finishedReadingCount: Int,
+    isDarkMode: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit,
     onLogoutClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -100,10 +119,21 @@ private fun ProfileContent(
         ProfileHeaderSection(user = user)
         Spacer(modifier = Modifier.height(28.dp))
 
-        ReadingStatsSection(user = user)
+        ReadingStatsSection(
+            user = user,
+            bookmarkCount = bookmarkCount,
+            currentlyReadingCount = currentlyReadingCount,
+            finishedReadingCount = finishedReadingCount
+        )
         Spacer(modifier = Modifier.height(28.dp))
 
         AccountDetailsSection(user = user)
+        Spacer(modifier = Modifier.height(28.dp))
+
+        ThemeSettingSection(
+            isDarkMode = isDarkMode,
+            onToggleDarkMode = onToggleDarkMode
+        )
         Spacer(modifier = Modifier.height(36.dp))
 
         LogoutButton(onLogoutClick = onLogoutClick)
@@ -150,7 +180,12 @@ private fun ProfileHeaderSection(user: User) {
 }
 
 @Composable
-private fun ReadingStatsSection(user: User) {
+private fun ReadingStatsSection(
+    user: User,
+    bookmarkCount: Int,
+    currentlyReadingCount: Int,
+    finishedReadingCount: Int
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -159,7 +194,7 @@ private fun ReadingStatsSection(user: User) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         StatItem(
-            count = user.currentlyReadingIds.size,
+            count = currentlyReadingCount,
             label = "Đang đọc",
             icon = Icons.Default.AutoStories,
             color = Color(0xFF3B82F6)
@@ -173,7 +208,7 @@ private fun ReadingStatsSection(user: User) {
         )
 
         StatItem(
-            count = user.finishedBookIds.size,
+            count = finishedReadingCount,
             label = "Đã xong",
             icon = Icons.Default.CheckCircle,
             color = BooklyGreenPrimary
@@ -187,7 +222,7 @@ private fun ReadingStatsSection(user: User) {
         )
 
         StatItem(
-            count = user.favoriteBookIds.size,
+            count = bookmarkCount,
             label = "Yêu thích",
             icon = Icons.Default.Favorite,
             color = Color(0xFFEF4444)
@@ -238,6 +273,63 @@ private fun AccountDetailsSection(user: User) {
             title = "Phiên bản ứng dụng",
             value = "Bookly v1.0.0"
         )
+    }
+}
+
+@Composable
+private fun ThemeSettingSection(
+    isDarkMode: Boolean,
+    onToggleDarkMode: (Boolean) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Giao diện",
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = if (isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
+                    contentDescription = null,
+                    tint = if (isDarkMode) Color(0xFFF59E0B) else Color(0xFFFBBF24),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(14.dp))
+                Column {
+                    Text(
+                        text = "Chế độ tối",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = if (isDarkMode) "Đang bật giao diện tối" else "Đang dùng giao diện sáng",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Switch(
+                checked = isDarkMode,
+                onCheckedChange = onToggleDarkMode,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = BooklyGreenPrimary
+                )
+            )
+        }
     }
 }
 

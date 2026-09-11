@@ -9,5 +9,7 @@ data class ReadingProgressEntity(
     val bookId: String,
     val lastChapterNumber: Int,
     val lastChapterTitle: String = "",
+    val totalChapters: Int = 0,
+    val isFinished: Boolean = false,
     val lastReadAt: Long = System.currentTimeMillis()
 )

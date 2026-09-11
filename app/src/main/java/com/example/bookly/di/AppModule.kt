@@ -2,6 +2,7 @@ package com.example.bookly.di
 
 import androidx.room.Room
 import com.example.bookly.data.local.BooklyDatabase
+import com.example.bookly.data.local.ThemeManager
 import com.example.bookly.data.repository.AuthRepositoryImpl
 import com.example.bookly.data.repository.BookRepositoryImpl
 import com.example.bookly.domain.repository.AuthRepository
@@ -34,11 +35,12 @@ val appModule = module {
     single { get<BooklyDatabase>().bookDao() }
     single<AuthRepository> { AuthRepositoryImpl(auth = get(), firestore = get()) }
     single<BookRepository> { BookRepositoryImpl(firestore = get()) }
+    single { ThemeManager(androidContext()) }
     //Khoi tao ViewModels
     viewModel { AuthViewModel(authRepository = get()) }
     viewModel { BookViewModel(repository = get()) }
     viewModel { BookDetailViewModel(repository = get(), bookDao = get()) }
     viewModel { HomeViewModel(bookRepository = get(), authRepository = get()) }
-    viewModel { ProfileViewModel(authRepository = get()) }
+    viewModel { ProfileViewModel(authRepository = get(), bookDao = get(), themeManager = get()) }
     viewModel { BookmarkViewModel(bookDao = get()) }
 }

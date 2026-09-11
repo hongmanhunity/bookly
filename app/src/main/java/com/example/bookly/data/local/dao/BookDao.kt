@@ -29,7 +29,19 @@ interface BookDao {
     // Lấy tiến trình đọc của 1 cuốn sách
     @Query("SELECT * FROM reading_progress WHERE bookId = :bookId")
     fun getReadingProgress(bookId: String): Flow<ReadingProgressEntity?>
-    // Đếm số lượng sách đang đọc dở (dành cho màn hình Profile)
-    @Query("SELECT COUNT(*) FROM reading_progress")
+    // Đếm số lượng sách đang đọc dở (chưa đọc xong, dành cho màn hình Profile)
+    @Query("SELECT COUNT(*) FROM reading_progress WHERE isFinished = 0")
     fun getCurrentlyReadingCount(): Flow<Int>
+
+    // Đếm số lượng sách đã đọc xong (dành cho màn hình Profile)
+    @Query("SELECT COUNT(*) FROM reading_progress WHERE isFinished = 1")
+    fun getFinishedReadingCount(): Flow<Int>
+
+    // Xóa toàn bộ bookmark khi nạp lại dữ liệu
+    @Query("DELETE FROM bookmarks")
+    suspend fun clearAllBookmarks(): Int
+
+    // Xóa toàn bộ tiến trình đọc khi nạp lại dữ liệu
+    @Query("DELETE FROM reading_progress")
+    suspend fun clearAllReadingProgress(): Int
 }

@@ -99,7 +99,7 @@ fun EmailOtpVerificationScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         CanvasTheme(modifier = Modifier.fillMaxSize())
 
@@ -141,7 +141,7 @@ fun EmailOtpVerificationScreen(
             Text(
                 text = "Vui lòng nhập mã OTP gồm 6 chữ số đã được gửi tới địa chỉ email của bạn.",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF64748B),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 lineHeight = 22.sp
             )
@@ -235,7 +235,7 @@ fun EmailOtpVerificationScreen(
             ) {
                 Text(
                     text = "Quay lại Đăng nhập",
-                    color = Color(0xFF64748B),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             }
@@ -267,10 +267,10 @@ private fun OtpSixBoxesView(
                         modifier = Modifier
                             .size(46.dp, 54.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF8FAFC))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                             .border(
                                 width = if (isFocused) 2.dp else 1.dp,
-                                color = if (isFocused) BooklyGreenPrimary else Color(0xFFE2E8F0),
+                                color = if (isFocused) BooklyGreenPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
                                 shape = RoundedCornerShape(12.dp)
                             ),
                         contentAlignment = Alignment.Center

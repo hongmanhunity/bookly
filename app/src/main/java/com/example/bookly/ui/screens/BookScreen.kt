@@ -15,6 +15,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.Icon
@@ -36,6 +41,7 @@ import com.example.bookly.ui.components.book.SearchBar
 import com.example.bookly.ui.components.common.ErrorStateView
 import com.example.bookly.ui.components.common.LoadingStateView
 import com.example.bookly.ui.state.BookUiState
+import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.BookViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -47,11 +53,12 @@ fun BookScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(color = Color.White)
+            .background(color = MaterialTheme.colorScheme.background)
     ) {
         when (val state = uiState) {
             is BookUiState.Loading -> {
@@ -71,11 +78,43 @@ fun BookScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     item(span = { GridItemSpan(2) }) {
-                        SearchBar(
-                            query = searchQuery,
-                            onQueryChange = viewModel::onSearchQueryChange,
-                            onClear = viewModel::clearQuery
-                        )
+                        Column {
+                            SearchBar(
+                                query = searchQuery,
+                                onQueryChange = viewModel::onSearchQueryChange,
+                                onClear = viewModel::clearQuery
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Hàng chip thể loại (Category Filter Chips)
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(viewModel.categories) { category ->
+                                    val isSelected = category == selectedCategory
+                                    FilterChip(
+                                        selected = isSelected,
+                                        onClick = { viewModel.onCategorySelect(category) },
+                                        label = {
+                                            Text(
+                                                text = category,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                fontSize = 13.sp
+                                            )
+                                        },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = BooklyGreenPrimary,
+                                            selectedLabelColor = Color.White,
+                                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                            labelColor = MaterialTheme.colorScheme.onSurface
+                                        ),
+                                        border = null,
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
 
                     if (state.books.isEmpty()) {

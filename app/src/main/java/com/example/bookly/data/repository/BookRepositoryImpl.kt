@@ -144,8 +144,4 @@ class BookRepositoryImpl(
 
         awaitClose { listener.remove() }
     }
-
-    override suspend fun seedSampleBooks(): Result<Unit> {
-        return com.example.bookly.data.seeder.FirestoreSeeder.seedBooks(firestore)
-    }
 }

@@ -45,7 +45,7 @@ fun BookCard(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             shadowElevation = 6.dp,
-            color = Color.White
+            color = MaterialTheme.colorScheme.surface
         ) {
             Box {
                 AsyncImage(
@@ -68,7 +68,7 @@ fun BookCard(
                             .align(Alignment.TopEnd)
                             .padding(8.dp),
                         shape = RoundedCornerShape(8.dp),
-                        color = Color.White.copy(alpha = 0.9f),
+                        color = Color.Black.copy(alpha = 0.7f),
                         shadowElevation = 2.dp
                     ) {
                         Row(
@@ -79,7 +79,7 @@ fun BookCard(
                                 text = "⭐ ${book.rating}",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2C3E50)
+                                color = Color.White
                             )
                         }
                     }
@@ -93,7 +93,7 @@ fun BookCard(
             text = book.title,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF2C3E50),
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -103,7 +103,7 @@ fun BookCard(
         Text(
             text = book.author,
             fontSize = 13.sp,
-            color = Color(0xFF7F8C8D),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

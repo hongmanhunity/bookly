@@ -11,7 +11,7 @@ import com.example.bookly.data.local.entity.ReadingProgressEntity
         BookmarkEntity::class,
         ReadingProgressEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class BooklyDatabase : RoomDatabase() {

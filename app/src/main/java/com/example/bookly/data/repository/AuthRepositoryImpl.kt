@@ -124,12 +124,14 @@ class AuthRepositoryImpl(
     }
 
     override fun getCurrentUser(): Flow<User?> = callbackFlow {
+        var firestoreListener: com.google.firebase.firestore.ListenerRegistration? = null
         val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             val firebaseUser = firebaseAuth.currentUser
+            firestoreListener?.remove()
             if (firebaseUser == null) {
                 trySend(null)
             } else {
-                firestore.collection("users").document(firebaseUser.uid)
+                firestoreListener = firestore.collection("users").document(firebaseUser.uid)
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) {
                             trySend(null)
@@ -144,6 +146,9 @@ class AuthRepositoryImpl(
             }
         }
         auth.addAuthStateListener(listener)
-        awaitClose { auth.removeAuthStateListener(listener) }
+        awaitClose {
+            auth.removeAuthStateListener(listener)
+            firestoreListener?.remove()
+        }
     }
 }

@@ -23,8 +23,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import com.example.bookly.data.local.ThemeManager
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -37,7 +39,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.bookly.data.seeder.FirestoreSeeder
 import com.example.bookly.ui.navigation.Screen
 import com.example.bookly.ui.screens.BookDetailScreen
 import com.example.bookly.ui.screens.BookmarkScreen
@@ -51,13 +52,17 @@ import com.example.bookly.ui.screens.RegisterScreen
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.theme.BooklyTheme
 import com.google.firebase.auth.FirebaseAuth
+import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
+    private val themeManager: ThemeManager by inject()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            BooklyTheme {
+            val isDarkMode by themeManager.isDarkMode.collectAsState()
+            BooklyTheme(darkTheme = isDarkMode) {
                 // 1. Khởi tạo NavController (chiếc remote điều khiển chuyển màn)
                 val navController = rememberNavController()
 
@@ -81,11 +86,6 @@ class MainActivity : ComponentActivity() {
                     Screen.BookList.route,
                     Screen.Bookmarks.route
                 )
-
-                // Chỉ gieo dữ liệu nếu chưa có trên Firestore
-                LaunchedEffect(Unit) {
-                    FirestoreSeeder.seedBooks(forceReSeed = false)
-                }
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -279,7 +279,8 @@ fun BooklyTopBar(
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.White
+            containerColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
+            scrolledContainerColor = androidx.compose.material3.MaterialTheme.colorScheme.background
         )
     )
 }
@@ -289,7 +290,10 @@ fun BooklyBottomNav(
     currentRoute: String?,
     onNavigateToRoute: (String) -> Unit
 ) {
-    NavigationBar(containerColor = Color.White) {
+    NavigationBar(
+        containerColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
+        tonalElevation = 0.dp
+    ) {
         NavigationBarItem(
             selected = currentRoute == Screen.Home.route,
             onClick = { onNavigateToRoute(Screen.Home.route) },

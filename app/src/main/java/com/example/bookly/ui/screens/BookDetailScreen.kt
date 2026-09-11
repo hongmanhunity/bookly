@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -86,6 +87,7 @@ fun BookDetailScreen(
 
     // ✅ MỚI: Đọc trực tiếp trạng thái từ Room Database:
     val isFavorite by viewModel.isBookmarked(bookId).collectAsState(initial = false)
+    val readingProgress by viewModel.getReadingProgress(bookId).collectAsState(initial = null)
 
     Column(
         modifier = Modifier
@@ -242,27 +244,36 @@ fun BookDetailScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Nút Đọc Sách
+                    // Nút Đọc Sách / Đọc Tiếp
+                    val targetChapter = readingProgress?.lastChapterNumber ?: 1
+                    val isFinished = readingProgress?.isFinished == true
+
                     Button(
                         onClick = {
                             if (chapters.isNotEmpty()) {
-                                onChapterClick(1)
+                                onChapterClick(if (isFinished) 1 else targetChapter)
                             }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = BooklyGreenPrimary)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isFinished) Color(0xFF2E7D32) else BooklyGreenPrimary
+                        )
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                            imageVector = if (isFinished) Icons.Default.CheckCircle else Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Bắt Đầu Đọc",
+                            text = when {
+                                isFinished -> "Đã xong • Đọc lại từ đầu"
+                                readingProgress != null -> "Đọc tiếp (Chương $targetChapter)"
+                                else -> "Bắt Đầu Đọc"
+                            },
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )

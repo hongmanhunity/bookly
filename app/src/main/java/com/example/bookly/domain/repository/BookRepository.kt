@@ -10,5 +10,4 @@ interface BookRepository {
     fun getChapters(bookId: String): Flow<List<Chapter>>
     fun getFeaturedBooks(): Flow<List<Book>>
     fun getTrendingBooks(): Flow<List<Book>>
-    suspend fun seedSampleBooks(): Result<Unit>
 }
