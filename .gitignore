@@ -14,7 +14,8 @@
 /bin/
 /gen/
 /out/
-/build/
+build/
+**/build/
 
 # Android Studio & Gradle
 *.iml
