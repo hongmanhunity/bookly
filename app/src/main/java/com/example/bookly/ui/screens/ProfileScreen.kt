@@ -1,6 +1,13 @@
 package com.example.bookly.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,19 +19,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Logout
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -36,6 +44,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookly.domain.model.User
+import com.example.bookly.ui.components.common.BooklyConfirmationDialog
 import com.example.bookly.ui.components.common.ErrorStateView
 import com.example.bookly.ui.components.common.LoadingStateView
 import com.example.bookly.ui.state.ProfileUiState
@@ -107,17 +119,34 @@ private fun ProfileContent(
     onToggleDarkMode: (Boolean) -> Unit,
     onLogoutClick: () -> Unit
 ) {
-    val scrollState = rememberScrollState()
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
+    if (showLogoutDialog) {
+        BooklyConfirmationDialog(
+            title = "Đăng xuất tài khoản?",
+            message = "Bạn có chắc muốn đăng xuất?\nĐăng nhập lại để tiếp tục đọc.",
+            confirmText = "Đăng xuất",
+            dismissText = "Ở lại",
+            icon = Icons.AutoMirrored.Filled.Logout,
+            isDestructive = true,
+            onConfirm = {
+                showLogoutDialog = false
+                onLogoutClick()
+            },
+            onDismiss = {
+                showLogoutDialog = false
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(horizontal = 20.dp, vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 20.dp, vertical = 18.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
         ProfileHeaderSection(user = user)
-        Spacer(modifier = Modifier.height(28.dp))
 
         ReadingStatsSection(
             user = user,
@@ -125,18 +154,17 @@ private fun ProfileContent(
             currentlyReadingCount = currentlyReadingCount,
             finishedReadingCount = finishedReadingCount
         )
-        Spacer(modifier = Modifier.height(28.dp))
 
-        AccountDetailsSection(user = user)
-        Spacer(modifier = Modifier.height(28.dp))
+        Column(modifier = Modifier.fillMaxWidth()) {
+            AccountDetailsSection(user = user)
+            Spacer(modifier = Modifier.height(14.dp))
+            ThemeSettingSection(
+                isDarkMode = isDarkMode,
+                onToggleDarkMode = onToggleDarkMode
+            )
+        }
 
-        ThemeSettingSection(
-            isDarkMode = isDarkMode,
-            onToggleDarkMode = onToggleDarkMode
-        )
-        Spacer(modifier = Modifier.height(36.dp))
-
-        LogoutButton(onLogoutClick = onLogoutClick)
+        LogoutButton(onLogoutClick = { showLogoutDialog = true })
     }
 }
 
@@ -144,38 +172,43 @@ private fun ProfileContent(
 private fun ProfileHeaderSection(user: User) {
     val firstLetter = user.displayName.firstOrNull()?.uppercase() ?: "B"
 
-    Box(
-        modifier = Modifier
-            .size(96.dp)
-            .clip(CircleShape)
-            .background(BooklyGreenPrimary),
-        contentAlignment = Alignment.Center
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
     ) {
+        Box(
+            modifier = Modifier
+                .size(94.dp)
+                .clip(CircleShape)
+                .background(BooklyGreenPrimary),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = firstLetter,
+                fontSize = 42.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         Text(
-            text = firstLetter,
-            fontSize = 40.sp,
+            text = user.displayName.ifBlank { "Người dùng Bookly" },
+            fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onSurface
         )
-    }
 
-    Spacer(modifier = Modifier.height(14.dp))
-
-    Text(
-        text = user.displayName.ifBlank { "Người dùng Bookly" },
-        fontSize = 22.sp,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.onSurface
-    )
-
-    if (user.bio.isNotBlank()) {
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(
-            text = "\"${user.bio}\"",
-            fontSize = 13.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Normal
-        )
+        if (user.bio.isNotBlank()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "\"${user.bio}\"",
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Normal
+            )
+        }
     }
 }
 
@@ -189,7 +222,7 @@ private fun ReadingStatsSection(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -203,7 +236,7 @@ private fun ReadingStatsSection(
         Box(
             modifier = Modifier
                 .width(1.dp)
-                .height(32.dp)
+                .height(30.dp)
                 .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
         )
 
@@ -217,7 +250,7 @@ private fun ReadingStatsSection(
         Box(
             modifier = Modifier
                 .width(1.dp)
-                .height(32.dp)
+                .height(30.dp)
                 .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
         )
 
@@ -232,15 +265,18 @@ private fun ReadingStatsSection(
 
 @Composable
 private fun AccountDetailsSection(user: User) {
+    val context = LocalContext.current
+    val feedbackEmail = "hongmanhunity@gmail.com"
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Thông tin tài khoản",
-            fontSize = 15.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         ProfileInfoRow(
             icon = Icons.Default.Email,
@@ -249,7 +285,7 @@ private fun AccountDetailsSection(user: User) {
         )
 
         HorizontalDivider(
-            modifier = Modifier.padding(vertical = 10.dp),
+            modifier = Modifier.padding(vertical = 5.dp),
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
         )
 
@@ -264,7 +300,7 @@ private fun AccountDetailsSection(user: User) {
         )
 
         HorizontalDivider(
-            modifier = Modifier.padding(vertical = 10.dp),
+            modifier = Modifier.padding(vertical = 5.dp),
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
         )
 
@@ -272,6 +308,31 @@ private fun AccountDetailsSection(user: User) {
             icon = Icons.Default.Info,
             title = "Phiên bản ứng dụng",
             value = "Bookly v1.0.0"
+        )
+
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 5.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+        )
+
+        ProfileInfoRow(
+            icon = Icons.Default.Feedback,
+            title = "Liên hệ & Góp ý",
+            value = feedbackEmail,
+            subtitle = "Chạm để gửi phản hồi",
+            onClick = {
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("mailto:$feedbackEmail")
+                    putExtra(Intent.EXTRA_SUBJECT, "[Bookly] Góp ý & Phản hồi")
+                }
+                try {
+                    context.startActivity(Intent.createChooser(intent, "Gửi email phản hồi"))
+                } catch (_: Exception) {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                    clipboard?.setPrimaryClip(ClipData.newPlainText("Email feedback", feedbackEmail))
+                    Toast.makeText(context, "Đã sao chép: $feedbackEmail", Toast.LENGTH_SHORT).show()
+                }
+            }
         )
     }
 }
@@ -284,17 +345,17 @@ private fun ThemeSettingSection(
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Giao diện",
-            fontSize = 15.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp),
+                .padding(vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -303,19 +364,19 @@ private fun ThemeSettingSection(
                     imageVector = if (isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
                     contentDescription = null,
                     tint = if (isDarkMode) Color(0xFFF59E0B) else Color(0xFFFBBF24),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(22.dp)
                 )
-                Spacer(modifier = Modifier.width(14.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Chế độ tối",
-                        fontSize = 15.sp,
+                        text = "Chế độ hiển thị",
+                        fontSize = 13.5.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = if (isDarkMode) "Đang bật giao diện tối" else "Đang dùng giao diện sáng",
-                        fontSize = 12.sp,
+                        text = if (isDarkMode) "Đang bật giao diện tối" else "Đang bật giao diện sáng",
+                        fontSize = 11.5.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -339,14 +400,15 @@ private fun LogoutButton(onLogoutClick: () -> Unit) {
         onClick = onLogoutClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .height(46.dp),
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xFFFEE2E2)
-        )
+        ),
+        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp)
     ) {
         Icon(
-            imageVector = Icons.Default.Logout,
+            imageVector = Icons.AutoMirrored.Filled.Logout,
             contentDescription = null,
             tint = Color(0xFFDC2626),
             modifier = Modifier.size(18.dp)
@@ -354,7 +416,7 @@ private fun LogoutButton(onLogoutClick: () -> Unit) {
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "Đăng xuất tài khoản",
-            fontSize = 15.sp,
+            fontSize = 14.5.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color(0xFFDC2626)
         )
@@ -374,12 +436,12 @@ private fun StatItem(
                 imageVector = icon,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(17.dp)
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(5.dp))
             Text(
                 text = count.toString(),
-                fontSize = 18.sp,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -387,7 +449,7 @@ private fun StatItem(
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = label,
-            fontSize = 12.sp,
+            fontSize = 11.5.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
@@ -397,15 +459,24 @@ private fun StatItem(
 private fun ProfileInfoRow(
     icon: ImageVector,
     title: String,
-    value: String
+    value: String,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    onClick: (() -> Unit)? = null
 ) {
+    val rowModifier = modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(8.dp))
+        .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+        .padding(vertical = 2.dp)
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = rowModifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(36.dp)
+                .size(34.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
@@ -414,13 +485,13 @@ private fun ProfileInfoRow(
                 imageVector = icon,
                 contentDescription = null,
                 tint = BooklyGreenPrimary,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(17.dp)
             )
         }
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 fontSize = 11.sp,
@@ -428,10 +499,17 @@ private fun ProfileInfoRow(
             )
             Text(
                 text = value,
-                fontSize = 14.sp,
+                fontSize = 13.5.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
             )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }

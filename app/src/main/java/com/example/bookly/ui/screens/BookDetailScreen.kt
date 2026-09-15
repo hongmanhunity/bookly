@@ -56,6 +56,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.example.bookly.ui.components.common.BooklyConfirmationDialog
 import com.example.bookly.ui.components.common.ErrorStateView
 import com.example.bookly.ui.components.common.LoadingStateView
 import com.example.bookly.ui.components.detail.ChapterItemRow
@@ -88,6 +89,27 @@ fun BookDetailScreen(
     // ✅ MỚI: Đọc trực tiếp trạng thái từ Room Database:
     val isFavorite by viewModel.isBookmarked(bookId).collectAsState(initial = false)
     val readingProgress by viewModel.getReadingProgress(bookId).collectAsState(initial = null)
+    var showUnbookmarkDialog by remember { mutableStateOf(false) }
+
+    // Dialog xác nhận trước khi bỏ lưu sách khỏi danh sách Yêu thích
+    if (showUnbookmarkDialog && uiState is DetailBookUiState.Success) {
+        val currentBook = (uiState as DetailBookUiState.Success).book
+        BooklyConfirmationDialog(
+            title = "Bỏ lưu tác phẩm?",
+            message = "Bạn có chắc muốn bỏ lưu sách?\nSách sẽ được gỡ khỏi Yêu thích.",
+            confirmText = "Bỏ lưu",
+            dismissText = "Giữ lại",
+            icon = Icons.Filled.BookmarkBorder,
+            isDestructive = true,
+            onConfirm = {
+                showUnbookmarkDialog = false
+                viewModel.toggleBookmark(currentBook, isCurrentlyBookmarked = true)
+            },
+            onDismiss = {
+                showUnbookmarkDialog = false
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -122,7 +144,11 @@ fun BookDetailScreen(
                 onClick = {
                     if (uiState is DetailBookUiState.Success) {
                         val currentBook = (uiState as DetailBookUiState.Success).book
-                        viewModel.toggleBookmark(currentBook, isFavorite)
+                        if (isFavorite) {
+                            showUnbookmarkDialog = true
+                        } else {
+                            viewModel.toggleBookmark(currentBook, isCurrentlyBookmarked = false)
+                        }
                     }
                 },
                 modifier = Modifier
@@ -339,7 +365,7 @@ fun BookDetailScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.navigationBarsPadding().height(24.dp))
                 }
             }
         }

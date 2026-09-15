@@ -91,7 +91,6 @@ class BookRepositoryImpl(
     override fun getFeaturedBooks(): Flow<List<Book>> = callbackFlow {
         val listener = firestore.collection("books")
             .orderBy("rating", Query.Direction.DESCENDING)
-            .limit(3)
             .addSnapshotListener { snapshots, exception ->
                 if (exception != null) {
                     close(exception)
@@ -120,6 +119,7 @@ class BookRepositoryImpl(
     override fun getTrendingBooks(): Flow<List<Book>> = callbackFlow {
         val listener = firestore.collection("books")
             .orderBy("rating", Query.Direction.DESCENDING)
+            .limit(10)
             .addSnapshotListener { snapshots, exception ->
                 if (exception != null) {
                     close(exception)
@@ -138,6 +138,36 @@ class BookRepositoryImpl(
                         publishedYear = document.getLong("publishedYear")?.toInt() ?: 2024
                     )
                 } ?: emptyList()
+
+                trySend(books)
+            }
+
+        awaitClose { listener.remove() }
+    }
+
+    override fun getNewReleases(): Flow<List<Book>> = callbackFlow {
+        val listener = firestore.collection("books").limit(10)
+            .addSnapshotListener { snapshots, exception ->
+                if (exception != null) {
+                    close(exception)
+                    return@addSnapshotListener
+                }
+                val books = snapshots?.documents?.map { document ->
+                    Book(
+                        id = document.id,
+                        title = document.getString("title") ?: "",
+                        author = document.getString("author") ?: "",
+                        description = document.getString("description") ?: "",
+                        category = document.getString("category") ?: "",
+                        coverUrl = document.getString("coverUrl") ?: "",
+                        rating = document.getDouble("rating") ?: 0.0,
+                        pageCount = document.getLong("pageCount")?.toInt() ?: 0,
+                        publishedYear = document.getLong("publishedYear")?.toInt() ?: 2024
+                    )
+                }?.sortedWith(
+                    compareByDescending<Book> { it.publishedYear }
+                        .thenByDescending { it.rating }
+                ) ?: emptyList()
 
                 trySend(books)
             }

@@ -14,14 +14,19 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.graphics.Color
+import com.example.bookly.ui.components.comment.CommentBottomSheet
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -35,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,6 +74,7 @@ fun ReaderScreen(
     val uiState by viewModel.uiState.collectAsState()
     var currentChapterNum by remember(initialChapterNumber) { mutableIntStateOf(initialChapterNumber) }
     var fontSizeSp by remember { mutableIntStateOf(16) }
+    var showCommentsSheet by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     LaunchedEffect(currentChapterNum) {
@@ -146,6 +153,13 @@ fun ReaderScreen(
                             }
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { showCommentsSheet = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.ChatBubbleOutline,
+                                        contentDescription = "Bình luận",
+                                        tint = BooklyGreenPrimary
+                                    )
+                                }
                                 IconButton(
                                     onClick = { if (fontSizeSp > 12) fontSizeSp -= 2 },
                                     enabled = fontSizeSp > 12
@@ -196,15 +210,46 @@ fun ReaderScreen(
                             val contentText = currentChapter?.content
                                 ?: "Nội dung chương này đang được cập nhật..."
 
-                            Text(
-                                text = contentText,
-                                fontSize = fontSizeSp.sp,
-                                lineHeight = (fontSizeSp * 1.65).sp,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.Justify
-                            )
+                            SelectionContainer {
+                                Text(
+                                    text = contentText,
+                                    fontSize = fontSizeSp.sp,
+                                    lineHeight = (fontSizeSp * 1.65).sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.Justify
+                                )
+                            }
 
-                            Spacer(modifier = Modifier.height(40.dp))
+                            Spacer(modifier = Modifier.height(28.dp))
+
+                            Surface(
+                                onClick = { showCommentsSheet = true },
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ChatBubbleOutline,
+                                        contentDescription = null,
+                                        tint = BooklyGreenPrimary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Bình luận về chương này",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = BooklyGreenPrimary
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(36.dp))
                         }
                     }
 
@@ -218,7 +263,8 @@ fun ReaderScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                                .navigationBarsPadding()
+                                .padding(horizontal = 16.dp, vertical = 6.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -283,6 +329,15 @@ fun ReaderScreen(
                                 }
                             }
                         }
+                    }
+
+                    if (showCommentsSheet && currentChapter != null) {
+                        CommentBottomSheet(
+                            bookId = bookId,
+                            chapterId = currentChapter.id,
+                            chapterTitle = currentChapter.title.ifBlank { "Chương $currentChapterNum" },
+                            onDismiss = { showCommentsSheet = false }
+                        )
                     }
                 }
             }

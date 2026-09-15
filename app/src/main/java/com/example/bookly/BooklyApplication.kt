@@ -8,11 +8,9 @@ import org.koin.core.context.startKoin
 class BooklyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-
-        // Khởi động Koin ngay khi mở ứng dụng
         startKoin {
             androidContext(this@BooklyApplication)
-            modules(appModule) // Nạp bảng cấu hình AppModule vào Koin
+            modules(appModule)
         }
     }
 }

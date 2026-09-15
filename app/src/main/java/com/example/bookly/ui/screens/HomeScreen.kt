@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookly.ui.components.common.ErrorStateView
 import com.example.bookly.ui.components.common.LoadingStateView
 import com.example.bookly.ui.components.common.SectionHeader
+import com.example.bookly.ui.components.home.NewReleaseBookCard
 import com.example.bookly.ui.components.home.RecommendedBookRow
 import com.example.bookly.ui.components.home.TrendingBookCard
 import com.example.bookly.ui.state.HomeUiState
@@ -61,6 +63,7 @@ fun HomeScreen(
 
             is HomeUiState.Success -> {
                 val trendingBooks = state.trendingBooks
+                val newReleases = state.newReleases
                 val featuredBooks = state.featuredBooks
 
                 Column(
@@ -70,20 +73,20 @@ fun HomeScreen(
                         .verticalScroll(rememberScrollState())
                 ) {
                     // 0. Lời chào người dùng
-                    Text(
-                        text = "Xin chào, ${state.userDisplayName} 👋",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Hôm nay bạn muốn đọc câu chuyện gì nào?",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(18.dp))
+//                    Text(
+//                        text = "Xin chào, ${state.userDisplayName}",
+//                        style = MaterialTheme.typography.titleMedium,
+//                        fontWeight = FontWeight.Bold,
+//                        color = MaterialTheme.colorScheme.onBackground
+//                    )
+//                    Spacer(modifier = Modifier.height(2.dp))
+//                    Text(
+//                        text = "Hôm nay bạn muốn đọc câu chuyện gì nào?",
+//                        style = MaterialTheme.typography.bodySmall,
+//                        color = MaterialTheme.colorScheme.onSurfaceVariant
+//                    )
+//
+//                    Spacer(modifier = Modifier.height(18.dp))
 
                     // 1. Section: Light Novel Thịnh Hành
                     SectionHeader(
@@ -108,7 +111,32 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(28.dp))
 
-                    // 2. Section: Gợi Ý Cho Bạn (Sắp xếp theo đánh giá nổi bật)
+                    // 2. Section: Mới Cập Nhật Ra Mắt
+                    if (newReleases.isNotEmpty()) {
+                        SectionHeader(
+                            title = "Mới Cập Nhật Ra Mắt",
+                            icon = Icons.Default.AutoAwesome,
+                            iconTint = Color(0xFF00B0FF)
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            contentPadding = PaddingValues(bottom = 8.dp)
+                        ) {
+                            items(newReleases) { book ->
+                                NewReleaseBookCard(
+                                    book = book,
+                                    onClick = { onBookClick(book.id) }
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(28.dp))
+                    }
+
+                    // 3. Section: Gợi Ý Cho Bạn (Sắp xếp theo đánh giá nổi bật)
                     SectionHeader(
                         title = "Gợi Ý Cho Bạn",
                         icon = Icons.AutoMirrored.Filled.TrendingUp,

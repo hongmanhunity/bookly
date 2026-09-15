@@ -119,7 +119,10 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = startDestination,
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(
+                            top = innerPadding.calculateTopPadding(),
+                            bottom = if (showBottomBar) innerPadding.calculateBottomPadding() else 0.dp
+                        )
                     ) {
                         // --- MÀN HÌNH ĐĂNG NHẬP ---
                         composable(Screen.Login.route) {

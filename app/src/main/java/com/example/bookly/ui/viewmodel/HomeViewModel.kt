@@ -21,12 +21,14 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = combine(
         bookRepository.getFeaturedBooks(),
         bookRepository.getTrendingBooks(),
+        bookRepository.getNewReleases(),
         authRepository.getCurrentUser()
-    ) { featured, trending, user ->
+    ) { featured, trending, newReleases, user ->
         val name = user?.displayName?.ifBlank { "Độc Giả Bookly" } ?: "Độc Giả Bookly"
         HomeUiState.Success(
             featuredBooks = featured,
             trendingBooks = trending,
+            newReleases = newReleases,
             userDisplayName = name
         ) as HomeUiState
     }.catch { e ->
