@@ -5,20 +5,29 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -72,6 +81,7 @@ fun EmailOtpVerificationScreen(
     var otpValue by rememberSaveable { mutableStateOf("") }
     var countdownSeconds by remember { mutableIntStateOf(60) }
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(uiState) {
         when (uiState) {
@@ -103,141 +113,161 @@ fun EmailOtpVerificationScreen(
     ) {
         CanvasTheme(modifier = Modifier.fillMaxSize())
 
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .navigationBarsPadding()
+                .imePadding()
         ) {
-            // Icon Hero
-            Surface(
-                shape = CircleShape,
-                color = BooklyGreenPrimary.copy(alpha = 0.12f),
-                modifier = Modifier.size(88.dp)
+            val minHeight = maxHeight
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
+                    .heightIn(min = minHeight),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Security,
-                        contentDescription = "OTP Security",
-                        tint = BooklyGreenPrimary,
-                        modifier = Modifier.size(48.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "Xác Thực Mã OTP 6 Số",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Vui lòng nhập mã OTP gồm 6 chữ số đã được gửi tới địa chỉ email của bạn.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                lineHeight = 22.sp
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // 6 Ô vuông nhập OTP
-            OtpSixBoxesView(
-                otpText = otpValue,
-                onOtpTextChange = {
-                    if (it.length <= 6) {
-                        otpValue = it
-                        if (it.length == 6) {
-                            viewModel.verifyOtp(email, it)
-                        }
+                // Icon Hero
+                Surface(
+                    shape = CircleShape,
+                    color = BooklyGreenPrimary.copy(alpha = 0.12f),
+                    modifier = Modifier.size(88.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Security,
+                            contentDescription = "OTP Security",
+                            tint = BooklyGreenPrimary,
+                            modifier = Modifier.size(48.dp)
+                        )
                     }
-                },
-                focusRequester = focusRequester
-            )
+                }
 
-            if (uiState is AuthUiState.Error) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
+
                 Text(
-                    text = (uiState as AuthUiState.Error).message,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
+                    text = "Xác Thực Mã OTP 6 Số",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            // Nút Xác Thực
-            Button(
-                onClick = { viewModel.verifyOtp(email, otpValue) },
-                enabled = otpValue.length == 6 && uiState !is AuthUiState.Loading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BooklyGreenPrimary,
-                    contentColor = Color.White
-                )
-            ) {
-                if (uiState is AuthUiState.Loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Text(
-                        text = "Xác Thực Mã OTP",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Nút Gửi Lại Mã OTP
-            OutlinedButton(
-                onClick = {
-                    if (countdownSeconds == 0) {
-                        viewModel.resendOtp(email)
-                    }
-                },
-                enabled = countdownSeconds == 0 && uiState !is AuthUiState.Loading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
                 Text(
-                    text = if (countdownSeconds > 0) "Gửi lại mã OTP sau (${countdownSeconds}s)" else "Gửi Lại Mã OTP",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (countdownSeconds == 0) BooklyGreenPrimary else Color.Gray
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            TextButton(
-                onClick = {
-                    viewModel.resetUiState()
-                    onNavigateToLogin()
-                }
-            ) {
-                Text(
-                    text = "Quay lại Đăng nhập",
+                    text = "Vui lòng nhập mã OTP gồm 6 chữ số đã được gửi tới địa chỉ email của bạn.",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 14.sp
+                    textAlign = TextAlign.Center,
+                    lineHeight = 22.sp
                 )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // 6 Ô vuông nhập OTP
+                OtpSixBoxesView(
+                    otpText = otpValue,
+                    onOtpTextChange = {
+                        if (it.length <= 6) {
+                            otpValue = it
+                            if (it.length == 6) {
+                                focusManager.clearFocus()
+                                viewModel.verifyOtp(email, it)
+                            }
+                        }
+                    },
+                    focusRequester = focusRequester,
+                    onDone = {
+                        focusManager.clearFocus()
+                        if (otpValue.length == 6) {
+                            viewModel.verifyOtp(email, otpValue)
+                        }
+                    }
+                )
+
+                if (uiState is AuthUiState.Error) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = (uiState as AuthUiState.Error).message,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Nút Xác Thực
+                Button(
+                    onClick = {
+                        focusManager.clearFocus()
+                        viewModel.verifyOtp(email, otpValue)
+                    },
+                    enabled = otpValue.length == 6 && uiState !is AuthUiState.Loading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BooklyGreenPrimary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    if (uiState is AuthUiState.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = "Xác Thực Mã OTP",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Nút Gửi Lại Mã OTP
+                OutlinedButton(
+                    onClick = {
+                        if (countdownSeconds == 0) {
+                            viewModel.resendOtp(email)
+                        }
+                    },
+                    enabled = countdownSeconds == 0 && uiState !is AuthUiState.Loading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = if (countdownSeconds > 0) "Gửi lại mã OTP sau (${countdownSeconds}s)" else "Gửi Lại Mã OTP",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (countdownSeconds == 0) BooklyGreenPrimary else Color.Gray
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                TextButton(
+                    onClick = {
+                        viewModel.resetUiState()
+                        onNavigateToLogin()
+                    }
+                ) {
+                    Text(
+                        text = "Quay lại Đăng nhập",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
     }
@@ -247,12 +277,19 @@ fun EmailOtpVerificationScreen(
 private fun OtpSixBoxesView(
     otpText: String,
     onOtpTextChange: (String) -> Unit,
-    focusRequester: FocusRequester
+    focusRequester: FocusRequester,
+    onDone: (() -> Unit)? = null
 ) {
     BasicTextField(
         value = otpText,
         onValueChange = onOtpTextChange,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(
+            onDone = { onDone?.invoke() }
+        ),
         modifier = Modifier.focusRequester(focusRequester),
         decorationBox = {
             Row(
