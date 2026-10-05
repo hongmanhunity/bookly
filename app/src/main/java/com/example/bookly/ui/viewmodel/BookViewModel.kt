@@ -16,10 +16,8 @@ class BookViewModel(
     private val repository: BookRepository
 ) : ViewModel() {
     private var allBooks = emptyList<Book>()
-    //Filter
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-    // Category
     val categories = listOf("Tất cả", "Isekai", "Hành Động", "Kỳ Ảo", "Học Đường", "Phiêu Lưu", "Khoa Học Viễn Tưởng", "Lãng Mạn")
     private val _selectedCategory = MutableStateFlow("Tất cả")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
@@ -75,4 +73,3 @@ class BookViewModel(
         _uiState.value = BookUiState.Success(filteredBooks)
     }
 }
-

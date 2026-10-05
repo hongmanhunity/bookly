@@ -1,10 +1,10 @@
 package com.example.bookly.ui.screens
 
+import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookly.ui.components.common.CanvasTheme
+import com.example.bookly.ui.components.common.SocialLoginSection
 import com.example.bookly.ui.state.AuthUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.AuthViewModel
@@ -65,7 +66,8 @@ fun RegisterScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = koinViewModel(),
     onNavigateToLogin: () -> Unit = {},
-    onRegisterSuccessWithOtp: (email: String, otpCode: String) -> Unit = { _, _ -> }
+    onRegisterSuccess: (email: String) -> Unit = {},
+    onGoogleSuccess: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -76,13 +78,16 @@ fun RegisterScreen(
     var isPasswordVisible by rememberSaveable { mutableStateOf(false) }
     var localError by rememberSaveable { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    val activity = context as? Activity
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(uiState) {
         if (uiState is AuthUiState.OtpSent) {
-            val otpCode = (uiState as AuthUiState.OtpSent).otpCode
-            Toast.makeText(context, "🔑 Đã khởi tạo mã OTP 6 số thành công!", Toast.LENGTH_SHORT).show()
-            onRegisterSuccessWithOtp(email, otpCode)
+            Toast.makeText(context, "🔑 Đã gửi mã OTP 6 số tới email của bạn!", Toast.LENGTH_SHORT).show()
+            onRegisterSuccess(email)
+            viewModel.resetUiState()
+        } else if (uiState is AuthUiState.Success) {
+            onGoogleSuccess()
             viewModel.resetUiState()
         }
     }
@@ -94,19 +99,18 @@ fun RegisterScreen(
     ) {
         CanvasTheme(modifier = modifier)
 
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .navigationBarsPadding()
-                .imePadding()
+                .imePadding(),
+            contentAlignment = Alignment.Center
         ) {
-            val minHeight = maxHeight
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 32.dp, vertical = 24.dp)
-                    .heightIn(min = minHeight),
+                    .padding(horizontal = 32.dp, vertical = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -286,7 +290,20 @@ fun RegisterScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SocialLoginSection(
+                    onGoogleSignInSuccess = { idToken ->
+                        viewModel.signInWithGoogle(idToken)
+                    },
+                    onGithubClick = {
+                        if (activity != null) {
+                            viewModel.signInWithGitHub(activity)
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 TextButton(
                     onClick = {

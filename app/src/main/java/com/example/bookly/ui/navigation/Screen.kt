@@ -6,10 +6,10 @@ sealed class Screen(val route: String) {
     data object Login : Screen("login")
     data object Register : Screen("register")
 
-    data object EmailOtp : Screen("email_otp/{email}/{otp}") {
-        fun createRoute(email: String, otp: String): String {
+    data object EmailOtp : Screen("email_otp/{email}") {
+        fun createRoute(email: String): String {
             val safeEmail = Uri.encode(email.trim())
-            return "email_otp/$safeEmail/$otp"
+            return "email_otp/$safeEmail"
         }
     }
 

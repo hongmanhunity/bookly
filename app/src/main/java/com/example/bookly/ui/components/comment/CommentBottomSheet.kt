@@ -90,7 +90,6 @@ fun CommentBottomSheet(
     var isSending by remember { mutableStateOf(false) }
     var commentToDelete by remember { mutableStateOf<Comment?>(null) }
 
-    // Dialog xác nhận trước khi xóa bình luận
     if (commentToDelete != null) {
         val targetComment = commentToDelete!!
         BooklyConfirmationDialog(
@@ -117,7 +116,6 @@ fun CommentBottomSheet(
         )
     }
 
-    // Tải bình luận khi mở BottomSheet hoặc khi chapterId thay đổi
     LaunchedEffect(bookId, chapterId) {
         viewModel.loadComments(bookId, chapterId)
     }
@@ -136,7 +134,6 @@ fun CommentBottomSheet(
                 .navigationBarsPadding()
                 .imePadding()
         ) {
-            // 1. Header của BottomSheet
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -170,7 +167,6 @@ fun CommentBottomSheet(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // 2. Nội dung danh sách bình luận
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -212,7 +208,6 @@ fun CommentBottomSheet(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
 
-            // 3. Thanh nhập bình luận ở đáy
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -300,7 +295,6 @@ fun CommentItem(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.Top
     ) {
-        // Avatar
         if (!comment.userAvatar.isNullOrBlank()) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
@@ -330,7 +324,6 @@ fun CommentItem(
             }
         }
 
-        // Nội dung comment
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -368,7 +361,6 @@ fun CommentItem(
             )
         }
 
-        // Nút xóa (chỉ hiện khi là bình luận của chính người dùng này)
         if (isOwner) {
             IconButton(
                 onClick = onDelete,

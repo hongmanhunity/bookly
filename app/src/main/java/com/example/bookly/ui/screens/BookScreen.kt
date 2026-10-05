@@ -87,7 +87,6 @@ fun BookScreen(
 
                             Spacer(modifier = Modifier.height(10.dp))
 
-                            // Hàng chip thể loại (Category Filter Chips)
                             LazyRow(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {

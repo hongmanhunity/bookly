@@ -63,15 +63,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             val isDarkMode by themeManager.isDarkMode.collectAsState()
             BooklyTheme(darkTheme = isDarkMode) {
-                // 1. Khởi tạo NavController (chiếc remote điều khiển chuyển màn)
                 val navController = rememberNavController()
 
-                // 2. Tự động kiểm tra: Đã đăng nhập chưa?
-                // Nếu rồi -> vào thẳng Home, nếu chưa -> vào Login
                 val isUserLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
                 val startDestination = if (isUserLoggedIn) Screen.Home.route else Screen.Login.route
 
-                // 3. Lắng nghe route hiện tại để hiển thị TopBar và BottomBar
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
@@ -115,7 +111,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
-                    // 4. NavHost - Khung chiếu các màn hình theo từng route
                     NavHost(
                         navController = navController,
                         startDestination = startDestination,
@@ -124,14 +119,12 @@ class MainActivity : ComponentActivity() {
                             bottom = if (showBottomBar) innerPadding.calculateBottomPadding() else 0.dp
                         )
                     ) {
-                        // --- MÀN HÌNH ĐĂNG NHẬP ---
                         composable(Screen.Login.route) {
                             LoginScreen(
                                 onNavigateToRegister = {
                                     navController.navigate(Screen.Register.route)
                                 },
                                 onLoginSuccess = {
-                                    // Đăng nhập thành công: Sang Home và xóa Login khỏi Back Stack
                                     navController.navigate(Screen.Home.route) {
                                         popUpTo(Screen.Login.route) { inclusive = true }
                                     }
@@ -139,35 +132,34 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- MÀN HÌNH ĐĂNG KÝ ---
                         composable(Screen.Register.route) {
                             RegisterScreen(
                                 onNavigateToLogin = {
                                     navController.popBackStack()
                                 },
-                                onRegisterSuccessWithOtp = { email, otp ->
-                                    navController.navigate(Screen.EmailOtp.createRoute(email, otp))
+                                onRegisterSuccess = { email ->
+                                    navController.navigate(Screen.EmailOtp.createRoute(email))
+                                },
+                                onGoogleSuccess = {
+                                    navController.navigate(Screen.Home.route) {
+                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                    }
                                 }
                             )
                         }
 
-                        // --- MÀN HÌNH XÁC THỰC OTP ---
                         composable(
                             route = Screen.EmailOtp.route,
                             arguments = listOf(
-                                navArgument("email") { type = NavType.StringType },
-                                navArgument("otp") { type = NavType.StringType }
+                                navArgument("email") { type = NavType.StringType }
                             )
                         ) { backStackEntry ->
                             val rawEmail = backStackEntry.arguments?.getString("email") ?: ""
                             val email = Uri.decode(rawEmail)
-                            val otp = backStackEntry.arguments?.getString("otp") ?: ""
 
                             EmailOtpVerificationScreen(
                                 email = email,
-                                initialOtpCode = otp,
                                 onVerifiedSuccess = {
-                                    // Xác thực xong -> quay về Login để người dùng đăng nhập
                                     navController.navigate(Screen.Login.route) {
                                         popUpTo(Screen.Register.route) { inclusive = true }
                                     }
@@ -180,7 +172,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- TAB 1: TRANG CHỦ ---
                         composable(Screen.Home.route) {
                             HomeScreen(
                                 onBookClick = { bookId ->
@@ -189,7 +180,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- TAB 2: TỦ SÁCH ---
                         composable(Screen.BookList.route) {
                             BookScreen(
                                 onBookClick = { bookId ->
@@ -198,11 +188,9 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- TAB 3: TRANG CÁ NHÂN ---
                         composable(Screen.Profile.route) {
                             ProfileScreen(
                                 onLogoutClick = {
-                                    // Đăng xuất: Về Login và xóa sạch toàn bộ màn hình trước đó
                                     navController.navigate(Screen.Login.route) {
                                         popUpTo(0) { inclusive = true }
                                     }
@@ -210,7 +198,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- CHI TIẾT SÁCH ---
                         composable(
                             route = Screen.BookDetail.route,
                             arguments = listOf(
@@ -229,7 +216,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- MÀN HÌNH ĐỌC SÁCH ---
                         composable(
                             route = Screen.Reader.route,
                             arguments = listOf(
@@ -249,7 +235,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // --- MÀN HÌNH SÁCH ĐÃ LƯU (BOOKMARKS) ---
                         composable(Screen.Bookmarks.route) {
                             BookmarkScreen(
                                 onBackClick = null,

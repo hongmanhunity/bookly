@@ -3,7 +3,6 @@ package com.example.bookly.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +21,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import android.app.Activity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.Button
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookly.ui.components.common.CanvasTheme
+import com.example.bookly.ui.components.common.SocialLoginSection
 import com.example.bookly.ui.state.AuthUiState
 import com.example.bookly.ui.theme.BooklyGreenPrimary
 import com.example.bookly.ui.viewmodel.AuthViewModel
@@ -67,6 +69,8 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
+    val activity = context as? Activity
 
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -87,19 +91,18 @@ fun LoginScreen(
         CanvasTheme(
             modifier = modifier
         )
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .navigationBarsPadding()
-                .imePadding()
+                .imePadding(),
+            contentAlignment = Alignment.Center
         ) {
-            val minHeight = maxHeight
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 32.dp, vertical = 24.dp)
-                    .heightIn(min = minHeight),
+                    .padding(horizontal = 32.dp, vertical = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -229,7 +232,20 @@ fun LoginScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SocialLoginSection(
+                    onGoogleSignInSuccess = { idToken ->
+                        viewModel.signInWithGoogle(idToken)
+                    },
+                    onGithubClick = {
+                        if (activity != null) {
+                            viewModel.signInWithGitHub(activity)
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 TextButton(
                     onClick = {

@@ -72,23 +72,7 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // 0. Lời chào người dùng
-//                    Text(
-//                        text = "Xin chào, ${state.userDisplayName}",
-//                        style = MaterialTheme.typography.titleMedium,
-//                        fontWeight = FontWeight.Bold,
-//                        color = MaterialTheme.colorScheme.onBackground
-//                    )
-//                    Spacer(modifier = Modifier.height(2.dp))
-//                    Text(
-//                        text = "Hôm nay bạn muốn đọc câu chuyện gì nào?",
-//                        style = MaterialTheme.typography.bodySmall,
-//                        color = MaterialTheme.colorScheme.onSurfaceVariant
-//                    )
-//
-//                    Spacer(modifier = Modifier.height(18.dp))
 
-                    // 1. Section: Light Novel Thịnh Hành
                     SectionHeader(
                         title = "Light Novel Thịnh Hành",
                         icon = Icons.Default.LocalFireDepartment,
@@ -111,7 +95,6 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(28.dp))
 
-                    // 2. Section: Mới Cập Nhật Ra Mắt
                     if (newReleases.isNotEmpty()) {
                         SectionHeader(
                             title = "Mới Cập Nhật Ra Mắt",
@@ -136,7 +119,6 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(28.dp))
                     }
 
-                    // 3. Section: Gợi Ý Cho Bạn (Sắp xếp theo đánh giá nổi bật)
                     SectionHeader(
                         title = "Gợi Ý Cho Bạn",
                         icon = Icons.AutoMirrored.Filled.TrendingUp,

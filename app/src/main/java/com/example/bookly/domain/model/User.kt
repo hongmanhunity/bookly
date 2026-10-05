@@ -8,9 +8,8 @@ data class User(
     val displayName: String = "",
     val photoUrl: String? = null,
     val bio: String = "",
-    val role: String = "USER", // "USER" hoặc "ADMIN"
+    val role: String = "USER",
 
-    // Dữ liệu cá nhân hóa cho ứng dụng sách
     val favoriteBookIds: List<String> = emptyList(),
     val currentlyReadingIds: List<String> = emptyList(),
     val finishedBookIds: List<String> = emptyList(),

@@ -1,11 +1,13 @@
 package com.example.bookly.ui.viewmodel
 
+import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookly.domain.model.User
 import com.example.bookly.domain.repository.AuthRepository
 import com.example.bookly.data.repository.AuthRepositoryImpl
 import com.example.bookly.ui.state.AuthUiState
+import com.example.bookly.utils.AuthErrorParser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,8 +47,9 @@ class AuthViewModel(
 
             result.onSuccess {
                 _uiState.value = AuthUiState.Success
-            }.onFailure {
-                _uiState.value = AuthUiState.Error("Tài khoản hoặc mật khẩu không chính xác")
+            }.onFailure { error ->
+                val friendlyMessage = AuthErrorParser.parse(error) ?: "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."
+                _uiState.value = AuthUiState.Error(friendlyMessage)
             }
         }
     }
@@ -64,13 +67,13 @@ class AuthViewModel(
 
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
-            // Yêu cầu phát OTP & tạm lưu dữ liệu (CHƯA tạo Firebase Auth User)
             val otpResult = authRepository.requestRegistrationOtp(email.trim(), password, displayName.trim())
 
-            otpResult.onSuccess { otpCode ->
-                _uiState.value = AuthUiState.OtpSent(otpCode)
+            otpResult.onSuccess {
+                _uiState.value = AuthUiState.OtpSent
             }.onFailure { error ->
-                _uiState.value = AuthUiState.Error(error.message ?: "Đăng ký thất bại. Vui lòng thử lại!")
+                val friendlyMessage = AuthErrorParser.parse(error) ?: "Đăng ký thất bại. Vui lòng thử lại!"
+                _uiState.value = AuthUiState.Error(friendlyMessage)
             }
         }
     }
@@ -83,13 +86,13 @@ class AuthViewModel(
 
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
-            // Xác thực OTP -> Nếu đúng mới CHÍNH THỨC tạo tài khoản Firebase Auth
             val result = authRepository.verifyOtpAndCompleteRegistration(email.trim(), inputOtp)
 
             result.onSuccess {
                 _uiState.value = AuthUiState.OtpVerified
             }.onFailure { error ->
-                _uiState.value = AuthUiState.Error(error.message ?: "Mã OTP không chính xác. Vui lòng thử lại!")
+                val friendlyMessage = AuthErrorParser.parse(error) ?: "Mã OTP không chính xác. Vui lòng thử lại!"
+                _uiState.value = AuthUiState.Error(friendlyMessage)
             }
         }
     }
@@ -98,10 +101,11 @@ class AuthViewModel(
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
             val otpResult = authRepository.resendOtp(email.trim())
-            otpResult.onSuccess { otpCode ->
-                _uiState.value = AuthUiState.OtpSent(otpCode)
+            otpResult.onSuccess {
+                _uiState.value = AuthUiState.OtpSent
             }.onFailure { error ->
-                _uiState.value = AuthUiState.Error(error.message ?: "Không thể gửi lại mã OTP. Vui lòng thử lại sau.")
+                val friendlyMessage = AuthErrorParser.parse(error) ?: "Không thể gửi lại mã OTP. Vui lòng thử lại sau."
+                _uiState.value = AuthUiState.Error(friendlyMessage)
             }
         }
     }
@@ -115,5 +119,56 @@ class AuthViewModel(
 
     fun resetUiState() {
         _uiState.value = AuthUiState.Idle
+    }
+
+    fun signInWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState.Loading
+            val result = authRepository.signInWithGoogle(idToken)
+            result.onSuccess {
+                _uiState.value = AuthUiState.Success
+            }.onFailure { error ->
+                val friendlyMessage = AuthErrorParser.parse(error)
+                if (friendlyMessage != null) {
+                    _uiState.value = AuthUiState.Error(friendlyMessage)
+                } else {
+                    _uiState.value = AuthUiState.Idle
+                }
+            }
+        }
+    }
+
+    fun signInWithGitHub(activity: Activity) {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState.Loading
+            val result = authRepository.signInWithGitHub(activity)
+            result.onSuccess {
+                _uiState.value = AuthUiState.Success
+            }.onFailure { error ->
+                val friendlyMessage = AuthErrorParser.parse(error)
+                if (friendlyMessage != null) {
+                    _uiState.value = AuthUiState.Error(friendlyMessage)
+                } else {
+                    _uiState.value = AuthUiState.Idle
+                }
+            }
+        }
+    }
+
+    fun signInWithFacebook(activity: Activity) {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState.Loading
+            val result = authRepository.signInWithFacebook(activity)
+            result.onSuccess {
+                _uiState.value = AuthUiState.Success
+            }.onFailure { error ->
+                val friendlyMessage = AuthErrorParser.parse(error)
+                if (friendlyMessage != null) {
+                    _uiState.value = AuthUiState.Error(friendlyMessage)
+                } else {
+                    _uiState.value = AuthUiState.Idle
+                }
+            }
+        }
     }
 }

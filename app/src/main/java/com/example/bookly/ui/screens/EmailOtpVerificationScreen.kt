@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -69,7 +68,6 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun EmailOtpVerificationScreen(
     email: String,
-    initialOtpCode: String,
     onVerifiedSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit,
     modifier: Modifier = Modifier,
@@ -98,7 +96,6 @@ fun EmailOtpVerificationScreen(
         }
     }
 
-    // Đếm ngược 60s
     LaunchedEffect(countdownSeconds) {
         if (countdownSeconds > 0) {
             delay(1000L)
@@ -113,23 +110,21 @@ fun EmailOtpVerificationScreen(
     ) {
         CanvasTheme(modifier = Modifier.fillMaxSize())
 
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .navigationBarsPadding()
-                .imePadding()
+                .imePadding(),
+            contentAlignment = Alignment.Center
         ) {
-            val minHeight = maxHeight
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp, vertical = 20.dp)
-                    .heightIn(min = minHeight),
+                    .padding(horizontal = 24.dp, vertical = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Icon Hero
                 Surface(
                     shape = CircleShape,
                     color = BooklyGreenPrimary.copy(alpha = 0.12f),
@@ -167,7 +162,6 @@ fun EmailOtpVerificationScreen(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                // 6 Ô vuông nhập OTP
                 OtpSixBoxesView(
                     otpText = otpValue,
                     onOtpTextChange = {
@@ -200,7 +194,6 @@ fun EmailOtpVerificationScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Nút Xác Thực
                 Button(
                     onClick = {
                         focusManager.clearFocus()
@@ -233,7 +226,6 @@ fun EmailOtpVerificationScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Nút Gửi Lại Mã OTP
                 OutlinedButton(
                     onClick = {
                         if (countdownSeconds == 0) {

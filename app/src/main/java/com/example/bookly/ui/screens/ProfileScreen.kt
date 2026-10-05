@@ -8,9 +8,10 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -143,19 +144,14 @@ private fun ProfileContent(
         )
     }
 
-    BoxWithConstraints(
-        modifier = Modifier.fillMaxSize()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 18.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        val minHeight = maxHeight
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 18.dp)
-                .heightIn(min = minHeight),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
             ProfileHeaderSection(user = user)
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -183,7 +179,6 @@ private fun ProfileContent(
             LogoutButton(onLogoutClick = { showLogoutDialog = true })
 
             Spacer(modifier = Modifier.height(8.dp))
-        }
     }
 }
 
@@ -202,12 +197,23 @@ private fun ProfileHeaderSection(user: User) {
                 .background(BooklyGreenPrimary),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = firstLetter,
-                fontSize = 42.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            if (!user.photoUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = user.photoUrl,
+                    contentDescription = "Avatar của ${user.displayName}",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Text(
+                    text = firstLetter,
+                    fontSize = 42.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))

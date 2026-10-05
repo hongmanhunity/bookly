@@ -54,11 +54,10 @@ fun BooklyConfirmationDialog(
 ) {
     val isDark = isSystemInDarkTheme()
 
-    // 🎨 Bảng màu Pastel chuẩn DNA của Bookly
     val confirmBtnContainerColor = when {
-        isDestructive && !isDark -> Color(0xFFFEE2E2) // Đỏ pastel dịu mát của Bookly
-        isDestructive && isDark -> Color(0xFF3F1D1D)  // Đỏ trầm trong Dark Mode
-        !isDestructive && !isDark -> BooklyGreenLight // Xanh nhạt Bookly
+        isDestructive && !isDark -> Color(0xFFFEE2E2)
+        isDestructive && isDark -> Color(0xFF3F1D1D)
+        !isDestructive && !isDark -> BooklyGreenLight
         else -> BooklyGreenPrimary.copy(alpha = 0.2f)
     }
 
@@ -94,7 +93,6 @@ fun BooklyConfirmationDialog(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 1. Header Banner phong cách Bookly (Lấy cảm hứng từ Email Banner)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -105,7 +103,6 @@ fun BooklyConfirmationDialog(
                             )
                         )
                 ) {
-                    // Họa tiết vòng tròn nghệ thuật mờ
                     Canvas(modifier = Modifier.fillMaxSize()) {
                         drawCircle(
                             color = Color.White.copy(alpha = 0.12f),
@@ -119,7 +116,6 @@ fun BooklyConfirmationDialog(
                         )
                     }
 
-                    // Tên thương hiệu bookly được canh khoảng cách tự nhiên, không bị sát mép trên
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -136,7 +132,6 @@ fun BooklyConfirmationDialog(
                     }
                 }
 
-                // 2. Huy hiệu Icon trung tâm nổi giữa Header và Nội dung
                 if (icon != null) {
                     Box(
                         modifier = Modifier
@@ -166,7 +161,6 @@ fun BooklyConfirmationDialog(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // 3. Nội dung văn bản với font & cỡ chữ tự nhiên
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -196,7 +190,6 @@ fun BooklyConfirmationDialog(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // 4. Hàng Nút Bấm Viên Thuốc (Pill Shape Buttons)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),

@@ -1,9 +1,12 @@
 package com.example.bookly.data.repository
 
+import android.app.Activity
 import com.example.bookly.data.service.EmailService
 import com.example.bookly.domain.model.User
 import com.example.bookly.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.OAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +14,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 import kotlin.random.Random
-
+import com.google.firebase.firestore.DocumentSnapshot
 class AuthRepositoryImpl(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -26,20 +29,17 @@ class AuthRepositoryImpl(
         email: String,
         password: String,
         displayName: String
-    ): Result<String> = runCatching {
+    ): Result<Unit> = runCatching {
         val formattedEmail = email.trim().lowercase()
 
-        // 1. Kiểm tra xem Email đã đăng ký trong Firebase Auth chưa
         val fetchMethods = auth.fetchSignInMethodsForEmail(formattedEmail).await()
         val isAlreadyRegistered = fetchMethods.signInMethods?.isNotEmpty() == true
         if (isAlreadyRegistered) {
             throw Exception("Địa chỉ Email này đã được đăng ký tài khoản!")
         }
 
-        // 2. Sinh mã OTP 6 chữ số ngẫu nhiên
         val otpCode = Random.nextInt(100000, 999999).toString()
 
-        // 3. Tạm lưu thông tin đăng ký vào collection pending_registrations (CHƯA tạo Firebase Auth User)
         val pendingData = hashMapOf(
             "email" to formattedEmail,
             "password" to password,
@@ -52,13 +52,12 @@ class AuthRepositoryImpl(
             .set(pendingData)
             .await()
 
-        // 4. Phát thư Email HTML tới hòm thư Gmail người dùng
         EmailService.sendOtpEmail(formattedEmail, otpCode)
 
-        otpCode
+        Unit
     }
 
-    override suspend fun resendOtp(email: String): Result<String> = runCatching {
+    override suspend fun resendOtp(email: String): Result<Unit> = runCatching {
         val formattedEmail = email.trim().lowercase()
         val doc = firestore.collection("pending_registrations").document(formattedEmail).get().await()
 
@@ -73,7 +72,7 @@ class AuthRepositoryImpl(
             .await()
 
         EmailService.sendOtpEmail(formattedEmail, newOtpCode)
-        newOtpCode
+        Unit
     }
 
     override suspend fun verifyOtpAndCompleteRegistration(
@@ -100,11 +99,9 @@ class AuthRepositoryImpl(
             throw Exception("Mật khẩu không hợp lệ.")
         }
 
-        // 🎯 ĐÃ XÁC THỰC OTP THÀNH CÔNG -> BÂY GIỜ MỚI CHÍNH THỨC TẠO TÀI KHOẢN FIREBASE AUTH
         val authResult = auth.createUserWithEmailAndPassword(formattedEmail, savedPassword).await()
         val firebaseUser = authResult.user ?: throw Exception("Không thể tạo tài khoản Firebase Auth.")
 
-        // Tạo hồ sơ người dùng trong Firestore
         val newUser = User(
             uid = firebaseUser.uid,
             email = formattedEmail,
@@ -113,7 +110,6 @@ class AuthRepositoryImpl(
         )
         firestore.collection("users").document(firebaseUser.uid).set(newUser).await()
 
-        // Đã hoàn tất -> Xóa tài liệu tạm pending_registrations
         docRef.delete().await()
 
         Unit
@@ -150,5 +146,68 @@ class AuthRepositoryImpl(
             auth.removeAuthStateListener(listener)
             firestoreListener?.remove()
         }
+    }
+
+    private suspend fun handleSocialUser(firebaseUser: com.google.firebase.auth.FirebaseUser?) {
+        val user = firebaseUser ?: throw Exception("Không thể lấy thông tin tài khoản đăng nhập.")
+        val userDoc = firestore.collection("users").document(user.uid).get().await()
+
+        val photoUrl = user.photoUrl?.toString()
+            ?: user.providerData.firstOrNull { it.photoUrl != null }?.photoUrl?.toString()
+        val displayName = user.displayName?.takeIf { it.isNotBlank() } ?: "Độc giả Bookly"
+        val email = user.email ?: ""
+
+        if (!userDoc.exists()) {
+            val newUser = User(
+                uid = user.uid,
+                email = email,
+                displayName = displayName,
+                photoUrl = photoUrl,
+                createdAt = Date()
+            )
+            firestore.collection("users").document(user.uid).set(newUser).await()
+        } else {
+            val updates = mutableMapOf<String, Any>()
+            if (!photoUrl.isNullOrBlank()) {
+                updates["photoUrl"] = photoUrl
+            }
+            if (displayName != "Độc giả Bookly" && userDoc.getString("displayName").isNullOrBlank()) {
+                updates["displayName"] = displayName
+            }
+            if (updates.isNotEmpty()) {
+                firestore.collection("users").document(user.uid).update(updates).await()
+            }
+        }
+    }
+
+    override suspend fun signInWithGoogle(idToken: String): Result<Unit> = runCatching {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        val authResult = auth.signInWithCredential(credential).await()
+        handleSocialUser(authResult.user)
+    }
+
+    override suspend fun signInWithGoogleWeb(activity: Activity): Result<Unit> = runCatching {
+        val provider = OAuthProvider.newBuilder("google.com").apply {
+            addCustomParameter("prompt", "select_account")
+        }.build()
+        val authResult = auth.startActivityForSignInWithProvider(activity, provider).await()
+        handleSocialUser(authResult.user)
+    }
+
+    override suspend fun signInWithGitHub(activity: Activity): Result<Unit> = runCatching {
+        val provider = OAuthProvider.newBuilder("github.com").apply {
+            scopes = listOf("user:email", "read:user")
+        }.build()
+        val authResult = auth.startActivityForSignInWithProvider(activity, provider).await()
+        handleSocialUser(authResult.user)
+    }
+
+    override suspend fun signInWithFacebook(activity: Activity): Result<Unit> = runCatching {
+        val provider = OAuthProvider.newBuilder("facebook.com").apply {
+            addCustomParameter("display", "touch")
+            scopes = listOf("email", "public_profile")
+        }.build()
+        val authResult = auth.startActivityForSignInWithProvider(activity, provider).await()
+        handleSocialUser(authResult.user)
     }
 }

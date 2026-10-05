@@ -79,19 +79,17 @@ fun BookDetailScreen(
     }
 
     val rawUiState by viewModel.uiState.collectAsState()
-    
+
     val uiState = if (rawUiState is DetailBookUiState.Success && (rawUiState as DetailBookUiState.Success).book.id != bookId) {
         DetailBookUiState.Loading
     } else {
         rawUiState
     }
 
-    // ✅ MỚI: Đọc trực tiếp trạng thái từ Room Database:
     val isFavorite by viewModel.isBookmarked(bookId).collectAsState(initial = false)
     val readingProgress by viewModel.getReadingProgress(bookId).collectAsState(initial = null)
     var showUnbookmarkDialog by remember { mutableStateOf(false) }
 
-    // Dialog xác nhận trước khi bỏ lưu sách khỏi danh sách Yêu thích
     if (showUnbookmarkDialog && uiState is DetailBookUiState.Success) {
         val currentBook = (uiState as DetailBookUiState.Success).book
         BooklyConfirmationDialog(
@@ -117,7 +115,6 @@ fun BookDetailScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        // 1. Top Navigation Bar
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -165,7 +162,6 @@ fun BookDetailScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 2. Nội dung Chi tiết Sách hoặc Loading tinh tế
         when (val state = uiState) {
             is DetailBookUiState.Loading -> {
                 LoadingStateView(message = "Đang tải thông tin sách...")
@@ -185,7 +181,6 @@ fun BookDetailScreen(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Cover Image Hero
                     Surface(
                         shape = RoundedCornerShape(20.dp),
                         shadowElevation = 12.dp,
@@ -213,7 +208,6 @@ fun BookDetailScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Title & Author
                     Text(
                         text = book.title,
                         style = MaterialTheme.typography.headlineSmall,
@@ -231,7 +225,6 @@ fun BookDetailScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Quick Stats Row
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -270,7 +263,6 @@ fun BookDetailScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Nút Đọc Sách / Đọc Tiếp
                     val targetChapter = readingProgress?.lastChapterNumber ?: 1
                     val isFinished = readingProgress?.isFinished == true
 
@@ -307,7 +299,6 @@ fun BookDetailScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Giới Thiệu Nội Dung
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
                             text = "Giới Thiệu Tác Phẩm",
@@ -327,7 +318,6 @@ fun BookDetailScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Danh Sách Chương
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),

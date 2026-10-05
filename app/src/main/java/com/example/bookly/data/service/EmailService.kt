@@ -17,16 +17,9 @@ object EmailService {
 
     private const val TAG = "BooklyEmailService"
 
-    // 🔒 ĐƯỢC BẢO MẬT AN TOÀN TRONG local.properties (KHÔNG BAO GIỜ ĐẨY LÊN GITHUB)
     private val SENDER_EMAIL: String get() = BuildConfig.SENDER_EMAIL
     private val SENDER_APP_PASSWORD: String get() = BuildConfig.SENDER_APP_PASSWORD
 
-    /**
-     * Mẫu Email HTML thiết kế đẹp mắt thương hiệu Bookly:
-     * - Header xanh ngọc Bookly #4EBA87 sang trọng
-     * - Khung 6 con số OTP thiết kế cơ bản, tinh tế
-     * - Lời dặn bảo mật đơn giản, gọn gàng
-     */
     fun buildBooklyOtpEmailHtml(otpCode: String, recipientEmail: String): String {
         return """
             <!DOCTYPE html>
@@ -121,11 +114,11 @@ object EmailService {
                     <div class="content">
                         <h2>Xác Thực Tài Khoản Của Bạn</h2>
                         <p>Chào bạn, cảm ơn bạn đã đăng ký tài khoản tại <strong>Bookly</strong>. Đây là mã OTP 6 số để kích hoạt tài khoản của bạn:</p>
-                        
+
                         <div class="otp-box">$otpCode</div>
-                        
+
                         <p style="margin-bottom: 12px;">Mã OTP này có hiệu lực trong vòng <strong>5 phút</strong>.</p>
-                        
+
                         <div class="warning">
                             Vui lòng không chia sẻ mã này với bất kỳ ai để đảm bảo an toàn cho tài khoản.
                         </div>
@@ -139,9 +132,6 @@ object EmailService {
         """.trimIndent()
     }
 
-    /**
-     * Gửi Email THỰC TẾ qua Cổng Gmail SMTP (smtp.gmail.com)
-     */
     suspend fun sendOtpEmail(recipientEmail: String, otpCode: String): Boolean = withContext(Dispatchers.IO) {
         try {
             if (SENDER_EMAIL.isBlank() || SENDER_APP_PASSWORD.isBlank()) {

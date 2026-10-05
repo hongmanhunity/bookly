@@ -60,7 +60,6 @@ fun NewReleaseBookCard(
                 contentScale = ContentScale.Crop
             )
 
-            // Badge MỚI ở góc trên bên trái
             Surface(
                 modifier = Modifier
                     .padding(6.dp)
@@ -77,7 +76,6 @@ fun NewReleaseBookCard(
                 )
             }
 
-            // Đánh giá sao ở góc trên bên phải
             Surface(
                 modifier = Modifier
                     .padding(6.dp)

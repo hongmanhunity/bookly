@@ -23,7 +23,6 @@ import org.koin.dsl.module
 import com.example.bookly.ui.viewmodel.CommentViewModel
 
 val appModule = module {
-    //Khoi tao Firebase
     single { FirebaseAuth.getInstance() }
     single { FirebaseFirestore.getInstance() }
     single {
@@ -40,7 +39,6 @@ val appModule = module {
     single<BookRepository> { BookRepositoryImpl(firestore = get()) }
     single<CommentRepository> { CommentRepositoryImpl(firestore = get(), auth = get()) }
     single { ThemeManager(androidContext()) }
-    //Khoi tao ViewModels
     viewModel { AuthViewModel(authRepository = get()) }
     viewModel { BookViewModel(repository = get()) }
     viewModel { BookDetailViewModel(repository = get(), bookDao = get()) }

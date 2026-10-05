@@ -21,15 +21,17 @@ fun CanvasTheme(modifier: Modifier = Modifier) {
         drawCircle(
             color = Color(0x184EBA87),
             radius = 24.dp.toPx(),
-            center = Offset(size.width * 0.85f, size.height * 0.25f)
+            center = Offset(size.width * 0.85f, size.height * 0.15f)
         )
 
+        val offsetY = size.height * 0.05f
         val trianglePath = Path().apply {
-            moveTo(size.width * 0.75f, size.height * 0.08f)
-            lineTo(size.width * 0.85f, size.height * 0.14f)
-            lineTo(size.width * 0.65f, size.height * 0.15f)
+            moveTo(size.width * 0.76f, size.height * 0.08f - offsetY)
+            lineTo(size.width * 0.76f, size.height * 0.14f - offsetY)
+            lineTo(size.width * 0.58f, size.height * 0.15f - offsetY)
             close()
         }
+
         drawPath(
             path = trianglePath,
             color = Color(0x104EBA87)

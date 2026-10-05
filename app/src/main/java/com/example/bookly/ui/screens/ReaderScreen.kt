@@ -97,7 +97,6 @@ fun ReaderScreen(
                 val currentChapter = chapters.find { it.chapterNumber == currentChapterNum }
                     ?: chapters.getOrNull(currentChapterNum - 1)
 
-                // Tự động lưu tiến trình đọc dở khi người dùng xem chương
                 LaunchedEffect(currentChapterNum, currentChapter) {
                     if (currentChapter != null && chapters.isNotEmpty()) {
                         viewModel.saveReadingProgress(

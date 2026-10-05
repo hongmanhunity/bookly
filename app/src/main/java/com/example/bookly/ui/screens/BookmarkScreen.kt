@@ -72,7 +72,6 @@ fun BookmarkScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // 1. Thanh tiêu đề Top Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -102,7 +101,6 @@ fun BookmarkScreen(
             }
         }
 
-        // 2. Nội dung chính
         if (bookmarks.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -132,12 +130,10 @@ fun BookmarkScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                // Khối Thống Kê Chi Tiết
                 item(span = { GridItemSpan(2) }) {
                     FavoriteStatsCard(stats = stats)
                 }
 
-                // Bộ Lọc Thể Loại
                 if (stats.categoryDistribution.size > 1) {
                     item(span = { GridItemSpan(2) }) {
                         CategoryFilterSection(
@@ -149,7 +145,6 @@ fun BookmarkScreen(
                     }
                 }
 
-                // Danh sách sách yêu thích dạng lưới
                 items(filteredBookmarks, key = { it.bookId }) { item ->
                     val book = Book(
                         id = item.bookId,
@@ -179,7 +174,6 @@ private fun FavoriteStatsCard(stats: BookmarkStats) {
             .fillMaxWidth()
             .padding(top = 4.dp, bottom = 4.dp)
     ) {
-        // 1. Header: Tiêu đề & Huy hiệu % hoàn thành
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -225,7 +219,6 @@ private fun FavoriteStatsCard(stats: BookmarkStats) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 2. Segmented Reading Progress Bar (Thanh tiến độ phân đoạn)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -261,7 +254,6 @@ private fun FavoriteStatsCard(stats: BookmarkStats) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 3. Ba hộp chỉ số hành động (Đang đọc, Đã xong, Chưa đọc)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
