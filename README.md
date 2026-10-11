@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="app/src/main/res/drawable/ic_bookly_logo.png" alt="Bookly Logo" width="75" />
+  <img src="app/src/main/res/drawable/ic_bookly_logo.png" alt="Bookly Logo" width="120" />
   <h1>Bookly — Ứng Dụng Đọc Light Novel</h1>
   <p><b>Khám phá thế giới Light Novel hiện đại, mượt mà và giàu cảm xúc trên Android</b></p>
   <img src="screenshots/bookly_showcase.png" alt="Bookly Showcase" width="100%" />
@@ -51,6 +51,16 @@ Lấy cảm hứng từ tông màu **Xanh Ngọc – Trắng (`#4EBA87`)** tươ
 - **Thiết kế tập trung vào việc đọc**: Bố cục chữ, khoảng cách dòng và độ tương phản màu sắc được tinh chỉnh kỹ lưỡng để việc đọc các chương Light Novel dài hàng nghìn chữ luôn nhẹ nhàng, dễ chịu.
 - **Mạch trải nghiệm liền mạch**: Từ lúc khám phá truyện mới ở *Trang chủ* → xem *Chi tiết* → *Đọc chương* → *Bình luận* → *Quản lý tiến độ* trong *Tủ sách*, mọi thao tác chuyển tiếp đều tức thì và tự nhiên.
 - **Lưu trữ kết hợp Đám mây & Thiết bị**: Vừa đồng bộ kho truyện và bình luận tức thời trên đám mây, vừa lưu trữ chắc chắn tiến độ đọc và danh sách yêu thích ngay trên thiết bị.
+
+---
+
+## 📲 Tải Xuống & Trải Nghiệm (Download APK)
+
+Bạn có thể tải trực tiếp tệp cài đặt `.apk` để trải nghiệm **Bookly** ngay trên điện thoại Android (**Android 7.0+**) mà không cần qua các bước cài đặt phức tạp:
+
+1. Truy cập mục [**Releases**](https://github.com/hongmanhunity/bookly/releases) của dự án.
+2. Tải tệp `.apk` của phiên bản mới nhất về thiết bị Android của bạn.
+3. Mở tệp vừa tải để cài đặt và bắt đầu khám phá thế giới Light Novel trên **Bookly**.
 
 ---
 
